@@ -1,0 +1,22 @@
+# Node dependencies
+node_modules/
+
+# Build outputs (adjust if you use a different tool)
+dist/
+build/
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+logs/
+*.log
+
+# Editor/OS cruft
+.DS_Store
+Thumbs.db
+
+# IDE settings
+.vscode/
+*.swp
