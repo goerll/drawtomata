@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { Camera } from '../camera/Camera';
+import { Camera } from './Camera';
 import { PAN_CONFIG } from '../config/constants';
 
 export class EventHandlers {
@@ -56,7 +56,11 @@ export class EventHandlers {
                 const deltaX = (event.clientX - this.lastMousePosition.x) * PAN_CONFIG.speed;
                 const deltaY = (event.clientY - this.lastMousePosition.y) * PAN_CONFIG.speed;
 
-                this.camera.pan(-deltaX, deltaY);
+                // Scale pan movement by current zoom level for precision
+                const scaledDeltaX = deltaX / this.camera.getCurrentZoom();
+                const scaledDeltaY = deltaY / this.camera.getCurrentZoom();
+
+                this.camera.pan(-scaledDeltaX, scaledDeltaY);
                 this.lastMousePosition.set(event.clientX, event.clientY);
             }
         });

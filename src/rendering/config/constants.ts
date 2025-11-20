@@ -1,6 +1,6 @@
 export const RENDER_CONFIG = {
-    antialias: true,
-    backgroundColor: 0x000000,
+    ANTIALIAS: true,
+    backgroundColor: 0x10100E,
 } as const;
 
 export const CAMERA_CONFIG = {

@@ -2,13 +2,15 @@ import * as THREE from 'three';
 import { CAMERA_CONFIG, ZOOM_CONFIG } from '../config/constants';
 
 export class Camera {
-    private camera: THREE.OrthographicCamera;
+    private camera!: THREE.OrthographicCamera;
     private currentZoom: number;
     private position: THREE.Vector2;
+    private zoomCallbacks: ((zoom: number) => void)[];
 
     constructor() {
         this.currentZoom = ZOOM_CONFIG.initial;
         this.position = new THREE.Vector2(0, 0);
+        this.zoomCallbacks = [];
         this.setupCamera();
     }
 
@@ -42,6 +44,7 @@ export class Camera {
         this.currentZoom = THREE.MathUtils.clamp(newZoom, ZOOM_CONFIG.min, ZOOM_CONFIG.max);
         this.camera.zoom = this.currentZoom;
         this.camera.updateProjectionMatrix();
+        this.notifyZoomChanged();
     }
 
     public updateAspect(width: number, height: number): void {
@@ -84,6 +87,20 @@ export class Camera {
     public resetCamera() {
         this.applyZoom(ZOOM_CONFIG.initial);
         this.setPosition(0, 0);
+    }
+
+    public onZoomChanged(callback: (zoom: number) => void): () => void {
+        this.zoomCallbacks.push(callback);
+        return () => {
+            const index = this.zoomCallbacks.indexOf(callback);
+            if (index > -1) {
+                this.zoomCallbacks.splice(index, 1);
+            }
+        };
+    }
+
+    private notifyZoomChanged(): void {
+        this.zoomCallbacks.forEach(callback => callback(this.currentZoom));
     }
 
 }

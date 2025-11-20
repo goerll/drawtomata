@@ -3,7 +3,7 @@ import { RENDER_CONFIG, CIRCLE_CONFIG } from '../config/constants';
 
 export class Scene {
     private scene: THREE.Scene;
-    private circleOutline: THREE.LineLoop;
+    private circleOutline!: THREE.LineLoop;
 
     constructor() {
         this.scene = new THREE.Scene();
@@ -23,8 +23,10 @@ export class Scene {
             0
         );
 
-        const points = curve.getPoints(CIRCLE_CONFIG.segments);
-        const geometry = new THREE.BufferGeometry().setFromPoints(points);
+        const points2D = curve.getPoints(CIRCLE_CONFIG.segments);
+        // Convert 2D points to 3D vectors (z = 0 for 2D plane)
+        const points3D = points2D.map(point => new THREE.Vector3(point.x, point.y, 0));
+        const geometry = new THREE.BufferGeometry().setFromPoints(points3D);
         const material = new THREE.LineBasicMaterial({ color: CIRCLE_CONFIG.color });
 
         this.circleOutline = new THREE.LineLoop(geometry, material);
