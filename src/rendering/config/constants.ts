@@ -26,3 +26,10 @@ export const ZOOM_CONFIG = {
 export const PAN_CONFIG = {
     speed: 0.005,
 } as const;
+
+export const GRID_CONFIG = {
+    size: 100,           // Number of grid lines in each direction
+    spacing: 0.2,       // Distance between grid lines (circle diameter = 0.4, fits in 2x2 squares)
+    color: 0x30302B,    // Grid line color (subtle gray)
+    opacity: 0.3,       // Grid line opacity
+} as const;

@@ -3,7 +3,7 @@ import { Minus, Plus } from "lucide-react";
 import { useCamera } from "../contexts/CameraContext";
 
 export const ZoomControl: React.FC = () => {
-  const { currentZoom, zoomIn, zoomOut } = useCamera();
+  const { currentZoom, zoomIn, zoomOut, resetCamera } = useCamera();
   const zoomPercentage = Math.round(currentZoom * 100);
 
   return (
@@ -15,9 +15,9 @@ export const ZoomControl: React.FC = () => {
       >
         <Minus className="h-4 w-4" />
       </button>
-      <div className="px-3 py-1 text-[#FFFFE3] text-sm font-mono select-none">
+      <button className="px-2 py-1 text-[#FFFFE3] text-sm font-mono transition-all cursor-pointer select-none" onClick={resetCamera}>
         {zoomPercentage}%
-      </div>
+      </button>
       <button
         className="p-2 rounded-r-lg bg-transparent hover:bg-[#FFFFE3] hover:bg-opacity-10 transition-all cursor-pointer text-[#FFFFE3]"
         onClick={zoomIn}

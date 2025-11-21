@@ -4,11 +4,21 @@ import { Scene } from './Scene';
 import { Camera } from './Camera';
 import { EventHandlers } from './EventHandlers';
 
-// Global camera instance that can be accessed by the app
+// Global instances that can be accessed by the app
 let globalCamera: Camera | null = null;
+let globalScene: Scene | null = null;
+let globalEventHandlers: EventHandlers | null = null;
 
 export function getCamera(): Camera | null {
     return globalCamera;
+}
+
+export function getScene(): Scene | null {
+    return globalScene;
+}
+
+export function getEventHandlers(): EventHandlers | null {
+    return globalEventHandlers;
 }
 
 export function initThreeApp(canvas: HTMLCanvasElement): void {
@@ -34,7 +44,9 @@ export function initThreeApp(canvas: HTMLCanvasElement): void {
     const camera = new Camera();
 
     // Event handlers setup
-    const eventHandlers = new EventHandlers(camera);
+    const eventHandlers = new EventHandlers(camera, canvas);
+    eventHandlers.setupClickHandler();
+    eventHandlers.setupMouseHandlers();
     eventHandlers.setupWheelHandler();
     eventHandlers.setupResizeHandler(renderer);
     eventHandlers.setupPanHandlers();
@@ -48,4 +60,6 @@ export function initThreeApp(canvas: HTMLCanvasElement): void {
     animate();
 
     globalCamera = camera;
+    globalScene = scene;
+    globalEventHandlers = eventHandlers;
 }

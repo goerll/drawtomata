@@ -1,3 +1,17 @@
+@font-face {
+  font-family: 'Satoshi';
+  src: url('./assets/fonts/satoshi.ttf') format('truetype');
+  font-weight: 400 700;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Computer Modern';
+  src: url('./assets/fonts/computer-modern.ttf') format('truetype');
+  font-weight: normal;
+  font-display: swap;
+}
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;

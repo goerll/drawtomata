@@ -1,29 +1,54 @@
-import React, { createContext, useContext, useState } from 'react';
-import { Camera } from 'three';
+import React, { createContext, useContext, useState, useEffect } from 'react';
+import type { Camera as CameraClass } from '../rendering/engine/Camera';
 
 interface CameraContextType {
-    camera: Camera | null;
+    camera: CameraClass | null;
     currentZoom: number;
     zoomIn: () => void;
     zoomOut: () => void;
+    resetCamera: () => void;
 }
 
 const CameraContext = createContext<CameraContextType | undefined>(undefined);
 
-export const CameraProvider: React.FC<{ children: React.ReactNode; camera: Camera | null }> = ({ children, camera }) => {
+export const CameraProvider: React.FC<{ children: React.ReactNode; camera: CameraClass | null }> = ({ children, camera }) => {
     const [currentZoom, setCurrentZoom] = useState(1);
 
+    // Subscribe to camera zoom changes
+    useEffect(() => {
+        if (!camera) return;
+
+        // Initialize with current camera zoom
+        setCurrentZoom(camera.getCurrentZoom());
+
+        // Subscribe to zoom changes
+        const unsubscribe = camera.onZoomChanged((newZoom) => {
+            setCurrentZoom(newZoom);
+        });
+
+        return unsubscribe;
+    }, [camera]);
+
     const zoomIn = () => {
-        setCurrentZoom((prev) => Math.min(prev + 0.1, 2));
-        // Implement actual camera zoom logic here if needed, or just expose the state
+        if (camera) {
+            camera.zoomIn();
+        }
     };
 
     const zoomOut = () => {
-        setCurrentZoom((prev) => Math.max(prev - 0.1, 0.1));
+        if (camera) {
+            camera.zoomOut();
+        }
+    };
+
+    const resetCamera = () => {
+        if (camera) {
+            camera.resetCamera();
+        }
     };
 
     return (
-        <CameraContext.Provider value={{ camera, currentZoom, zoomIn, zoomOut }}>
+        <CameraContext.Provider value={{ camera, currentZoom, zoomIn, zoomOut, resetCamera }}>
             {children}
         </CameraContext.Provider>
     );

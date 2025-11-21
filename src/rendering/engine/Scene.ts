@@ -1,36 +1,52 @@
 import * as THREE from 'three';
-import { RENDER_CONFIG, CIRCLE_CONFIG } from '../config/constants';
+import { RENDER_CONFIG, GRID_CONFIG } from '../config/constants';
 
 export class Scene {
     private scene: THREE.Scene;
-    private circleOutline!: THREE.LineLoop;
+    private grid!: THREE.Group;
 
     constructor() {
         this.scene = new THREE.Scene();
         this.scene.background = new THREE.Color(RENDER_CONFIG.backgroundColor);
-        this.createCircleOutline();
+        this.createGrid();
     }
 
-    private createCircleOutline(): void {
-        const curve = new THREE.EllipseCurve(
-            0,
-            0, // center
-            CIRCLE_CONFIG.radius,
-            CIRCLE_CONFIG.radius, // radiusX, radiusY
-            0,
-            2 * Math.PI,
-            false,
-            0
-        );
+    private createGrid(): void {
+        this.grid = new THREE.Group();
 
-        const points2D = curve.getPoints(CIRCLE_CONFIG.segments);
-        // Convert 2D points to 3D vectors (z = 0 for 2D plane)
-        const points3D = points2D.map(point => new THREE.Vector3(point.x, point.y, 0));
-        const geometry = new THREE.BufferGeometry().setFromPoints(points3D);
-        const material = new THREE.LineBasicMaterial({ color: CIRCLE_CONFIG.color });
+        const material = new THREE.LineBasicMaterial({
+            color: GRID_CONFIG.color,
+            transparent: true,
+            opacity: GRID_CONFIG.opacity,
+        });
 
-        this.circleOutline = new THREE.LineLoop(geometry, material);
-        this.scene.add(this.circleOutline);
+        const halfSize = GRID_CONFIG.size * GRID_CONFIG.spacing;
+
+        // Create vertical lines
+        for (let i = -GRID_CONFIG.size; i <= GRID_CONFIG.size; i++) {
+            const x = i * GRID_CONFIG.spacing;
+            const points = [
+                new THREE.Vector3(x, -halfSize, -0.1),
+                new THREE.Vector3(x, halfSize, -0.1),
+            ];
+            const geometry = new THREE.BufferGeometry().setFromPoints(points);
+            const line = new THREE.Line(geometry, material);
+            this.grid.add(line);
+        }
+
+        // Create horizontal lines
+        for (let i = -GRID_CONFIG.size; i <= GRID_CONFIG.size; i++) {
+            const y = i * GRID_CONFIG.spacing;
+            const points = [
+                new THREE.Vector3(-halfSize, y, -0.1),
+                new THREE.Vector3(halfSize, y, -0.1),
+            ];
+            const geometry = new THREE.BufferGeometry().setFromPoints(points);
+            const line = new THREE.Line(geometry, material);
+            this.grid.add(line);
+        }
+
+        this.scene.add(this.grid);
     }
 
     public getThreeScene(): THREE.Scene {
