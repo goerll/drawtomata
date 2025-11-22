@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { VisualTransition, TRANSITION_CONFIG } from '../../types/Transition';
 import { STATE_CONFIG } from '../../types/rendering';
+import { FontType } from '../../contexts/AppStateContext';
 import type { StateManager } from './StateManager';
 
 /**
@@ -11,12 +12,14 @@ export class TransitionManager {
     private scene: THREE.Scene;
     private stateManager: StateManager;
     private transitionCounter: number;
+    private currentFont: FontType;
 
     constructor(scene: THREE.Scene, stateManager: StateManager) {
         this.transitions = new Map();
         this.scene = scene;
         this.stateManager = stateManager;
         this.transitionCounter = 0;
+        this.currentFont = FontType.COMPUTER_MODERN;
     }
 
     /**
@@ -432,7 +435,11 @@ export class TransitionManager {
         canvas.width = 512;
         canvas.height = 128;
 
-        context.font = `bold ${fontSize}px "Computer Modern", serif`;
+        // Map FontType to CSS font family - enum values are the actual font names
+        const fontFamily = `${this.currentFont}, ${this.currentFont === FontType.SATOSHI ? 'sans-serif' : 'serif'}`;
+
+        // Configure text rendering
+        context.font = `bold ${fontSize}px ${fontFamily}`;
         context.textAlign = 'center';
         context.textBaseline = 'middle';
 
@@ -467,5 +474,28 @@ export class TransitionManager {
         });
         this.transitions.clear();
         this.transitionCounter = 0;
+    }
+
+    /**
+     * Sets the font for all transition labels
+     */
+    public setFont(font: FontType): void {
+        this.currentFont = font;
+
+        // Regenerate all transition labels with the new font
+        this.transitions.forEach(transition => {
+            const labelText = transition.symbols.join(',');
+
+            // Remove old label
+            this.scene.remove(transition.label);
+
+            // Create new label with updated font
+            const newLabel = this.createTextLabel(labelText);
+            newLabel.position.copy(transition.label.position);
+            transition.label = newLabel;
+
+            // Add new label to scene
+            this.scene.add(newLabel);
+        });
     }
 }

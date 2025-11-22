@@ -119,6 +119,9 @@ function AppContent() {
                 const transitionManager = new TransitionManager(scene.getThreeScene(), stateManager);
                 transitionManagerRef.current = transitionManager;
 
+                // Immediately sync font from app state
+                transitionManager.setFont(state.selectedFont);
+
                 // Initialize SelectionBox
                 const selectionBox = new SelectionBox(scene.getThreeScene());
 
@@ -175,6 +178,9 @@ function AppContent() {
     React.useEffect(() => {
         if (stateManagerRef.current) {
             stateManagerRef.current.setFont(state.selectedFont);
+        }
+        if (transitionManagerRef.current) {
+            transitionManagerRef.current.setFont(state.selectedFont);
         }
     }, [state.selectedFont]);
 

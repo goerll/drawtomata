@@ -13,11 +13,10 @@ interface ToolbarButtonProps {
 const ToolbarButton: React.FC<ToolbarButtonProps> = ({ icon, title, isActive, onClick }) => {
   return (
     <button
-      className={`p-3 rounded-md transition-all cursor-pointer border ${
-        isActive
-          ? 'bg-[#FFFFE3] border-[#FFFFE3]'
-          : 'bg-transparent border-[#30302B] hover:bg-[#30302B]'
-      }`}
+      className={`p-3 rounded-md transition-all cursor-pointer border ${isActive
+        ? 'bg-[#FFFFE3] border-[#FFFFE3]'
+        : 'bg-transparent border-[#30302B] hover:bg-[#30302B]'
+        }`}
       onClick={onClick}
       title={title}
     >
@@ -33,7 +32,7 @@ export const Toolbar: React.FC = () => {
   return (
     <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-10">
       {/* Background dock */}
-      <div className="px-3 py-3 rounded-[12px] bg-[#10100E] border border-[#30302B] flex gap-3">
+      <div className="px-3 py-3 rounded-[12px] bg-[#10100E] bg-opacity-60 backdrop-blur-xl border border-[#30302B] border-opacity-50 flex gap-3 shadow-lg">
         <ToolbarButton
           icon={<MousePointer />}
           title="Select"

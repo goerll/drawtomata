@@ -45,7 +45,7 @@ export const AutomatonDefinitionSidebar: React.FC<AutomatonDefinitionSidebarProp
     const isAccepting = selectedStateId ? acceptStates.includes(selectedStateId) : false;
 
     return (
-        <div className="absolute left-4 top-24 bottom-24 w-64 bg-[#10100E] bg-opacity-90 border border-[#30302B] rounded-lg p-4 overflow-y-auto text-[#FFFFE3] font-mono text-sm shadow-xl z-10 flex flex-col gap-6">
+        <div className="absolute left-4 top-24 bottom-24 w-64 bg-[#10100E] bg-opacity-60 backdrop-blur-xl border border-[#30302B] border-opacity-50 rounded-lg p-4 overflow-y-auto text-[#FFFFE3] font-mono text-sm shadow-lg z-10 flex flex-col gap-6">
 
             {/* State Properties Panel */}
             <div className={`pb-4 ${!selectedStateId ? 'opacity-50 pointer-events-none' : ''}`}>
