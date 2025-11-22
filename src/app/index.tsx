@@ -11,6 +11,8 @@ import { Toolbar } from "../components/Toolbar";
 import { ZoomControl } from "../components/ZoomControl";
 import { TransitionModal } from "../components/TransitionModal";
 import { AutomatonDefinitionSidebar } from "../components/AutomatonDefinitionSidebar";
+import { SimulationPanel, SimulationStatus } from "../components/SimulationPanel";
+import { Automaton } from "../core/automaton/Automaton";
 import { AutomatonDefinition } from "../types/automaton";
 import { CameraProvider } from "../contexts/CameraContext";
 import { AppStateProvider, useAppState } from "../contexts/AppStateContext";
@@ -43,6 +45,18 @@ function AppContent() {
 
     // Selection state
     const [selectedStateId, setSelectedStateId] = React.useState<string | null>(null);
+
+    // Simulation state
+    const automatonRef = React.useRef<Automaton | null>(null);
+    const [simulationStatus, setSimulationStatus] = React.useState<SimulationStatus>({
+        isRunning: false,
+        currentPosition: 0,
+        inputString: '',
+        frontierStates: [],
+        isComplete: false,
+        isAccepted: null
+    });
+    const simulationIntervalRef = React.useRef<number | null>(null);
 
     // Helper to update definition from managers
     const updateDefinition = React.useCallback(() => {
@@ -79,7 +93,111 @@ function AppContent() {
             startState,
             acceptStates
         });
+
+        // Recreate Automaton instance when definition changes
+        if (stateIds.length > 0 && startState) {
+            const automaton = new Automaton(stateIds, Array.from(alphabetSet), startState, acceptStates);
+            transitionDefs.forEach(t => {
+                automaton.addTransition(t.from, t.symbol, [t.to]);
+            });
+            automatonRef.current = automaton;
+        } else {
+            automatonRef.current = null;
+        }
     }, []);
+
+    // Simulation control handlers
+    const handleSimulationStart = React.useCallback((input: string) => {
+        if (!automatonRef.current || !stateManagerRef.current) return;
+
+        automatonRef.current.startSimulation(input);
+        const frontierStates = automatonRef.current.getCurrentFrontierStates();
+
+        stateManagerRef.current.highlightFrontierStates(frontierStates);
+
+        setSimulationStatus({
+            isRunning: false,
+            currentPosition: 0,
+            inputString: input,
+            frontierStates,
+            isComplete: input.length === 0,
+            isAccepted: input.length === 0 && frontierStates.some(id => {
+                const state = stateManagerRef.current?.getState(id);
+                return state?.isAccepting || false;
+            })
+        });
+    }, []);
+
+    const handleSimulationStep = React.useCallback(() => {
+        if (!automatonRef.current || !stateManagerRef.current) return;
+
+        const hasMore = automatonRef.current.stepSimulation();
+        const simState = automatonRef.current.simulationState;
+
+        if (simState) {
+            const frontierStates = automatonRef.current.getCurrentFrontierStates();
+            stateManagerRef.current.highlightFrontierStates(frontierStates);
+
+            setSimulationStatus({
+                isRunning: false,
+                currentPosition: simState.currentPosition,
+                inputString: simState.input,
+                frontierStates,
+                isComplete: simState.isComplete,
+                isAccepted: simState.isComplete ? simState.isAccepted : null
+            });
+        }
+
+        return hasMore;
+    }, []);
+
+    const handleSimulationReset = React.useCallback(() => {
+        if (simulationIntervalRef.current) {
+            clearInterval(simulationIntervalRef.current);
+            simulationIntervalRef.current = null;
+        }
+
+        if (automatonRef.current) {
+            automatonRef.current.resetSimulation();
+        }
+
+        if (stateManagerRef.current) {
+            stateManagerRef.current.clearFrontierHighlight();
+        }
+
+        setSimulationStatus({
+            isRunning: false,
+            currentPosition: 0,
+            inputString: '',
+            frontierStates: [],
+            isComplete: false,
+            isAccepted: null
+        });
+    }, []);
+
+    const handleSimulationTogglePlay = React.useCallback(() => {
+        if (simulationStatus.isRunning) {
+            // Pause
+            if (simulationIntervalRef.current) {
+                clearInterval(simulationIntervalRef.current);
+                simulationIntervalRef.current = null;
+            }
+            setSimulationStatus(prev => ({ ...prev, isRunning: false }));
+        } else {
+            // Play
+            setSimulationStatus(prev => ({ ...prev, isRunning: true }));
+            simulationIntervalRef.current = window.setInterval(() => {
+                const hasMore = handleSimulationStep();
+                if (!hasMore) {
+                    if (simulationIntervalRef.current) {
+                        clearInterval(simulationIntervalRef.current);
+                        simulationIntervalRef.current = null;
+                    }
+                    setSimulationStatus(prev => ({ ...prev, isRunning: false }));
+                }
+            }, 500); // 500ms between steps
+        }
+    }, [simulationStatus.isRunning, handleSimulationStep]);
 
     React.useEffect(() => {
         if (!canvasRef.current) return;
@@ -254,6 +372,11 @@ function AppContent() {
                     selectedStateId={selectedStateId}
                     onToggleInitial={handleToggleInitial}
                     onToggleAccepting={handleToggleAccepting}
+                    simulationStatus={simulationStatus}
+                    onSimulationStart={handleSimulationStart}
+                    onSimulationStep={handleSimulationStep}
+                    onSimulationReset={handleSimulationReset}
+                    onSimulationTogglePlay={handleSimulationTogglePlay}
                 />
 
                 {/* Transition modal */}

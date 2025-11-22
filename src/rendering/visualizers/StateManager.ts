@@ -35,6 +35,7 @@ export class StateManager {
             isStart,
             isAccepting,
             isSelected: false,
+            isFrontier: false,
         };
 
         this.states.set(id, visualState);
@@ -150,17 +151,18 @@ export class StateManager {
     /**
      * Updates a state's appearance
      */
-    public updateState(id: string, updates: Partial<Pick<VisualState, 'isStart' | 'isAccepting' | 'isSelected'>>): void {
+    public updateState(id: string, updates: Partial<Pick<VisualState, 'isStart' | 'isAccepting' | 'isSelected' | 'isFrontier'>>): void {
         const state = this.states.get(id);
         if (!state) return;
 
         if (updates.isStart !== undefined) state.isStart = updates.isStart;
         if (updates.isAccepting !== undefined) state.isAccepting = updates.isAccepting;
         if (updates.isSelected !== undefined) state.isSelected = updates.isSelected;
+        if (updates.isFrontier !== undefined) state.isFrontier = updates.isFrontier;
 
         // Recreate visual to reflect changes
         this.scene.remove(state.mesh);
-        state.mesh = this.createStateVisual(id, state.isStart, state.isAccepting, state.isSelected);
+        state.mesh = this.createStateVisual(id, state.isStart, state.isAccepting, state.isSelected, state.isFrontier);
         state.mesh.position.set(state.position.x, state.position.y, 0);
         this.scene.add(state.mesh);
     }
@@ -168,13 +170,15 @@ export class StateManager {
     /**
      * Creates the Three.js visual representation of a state
      */
-    private createStateVisual(id: string, isStart: boolean, isAccepting: boolean, isSelected: boolean = false): THREE.Group {
+    private createStateVisual(id: string, isStart: boolean, isAccepting: boolean, isSelected: boolean = false, isFrontier: boolean = false): THREE.Group {
         const group = new THREE.Group();
 
-        // Determine which config to use based on state type (priority: selected > start > accepting > normal)
+        // Determine which config to use based on state type (priority: selected > frontier > start > accepting > normal)
         let config;
         if (isSelected) {
             config = STATE_CONFIG.selected;
+        } else if (isFrontier) {
+            config = STATE_CONFIG.frontier;
         } else if (isStart) {
             config = STATE_CONFIG.start;
         } else if (isAccepting) {
@@ -317,6 +321,30 @@ export class StateManager {
         });
     }
 
+    /**
+     * Highlights the given states as frontier states
+     */
+    public highlightFrontierStates(stateIds: string[]): void {
+        const frontierSet = new Set(stateIds);
+
+        this.states.forEach(state => {
+            const shouldBeFrontier = frontierSet.has(state.id);
+            if (state.isFrontier !== shouldBeFrontier) {
+                this.updateState(state.id, { isFrontier: shouldBeFrontier });
+            }
+        });
+    }
+
+    /**
+     * Clears all frontier highlighting
+     */
+    public clearFrontierHighlight(): void {
+        this.states.forEach(state => {
+            if (state.isFrontier) {
+                this.updateState(state.id, { isFrontier: false });
+            }
+        });
+    }
     /**
      * Creates a text label sprite using canvas texture
      */

@@ -10,6 +10,7 @@ export interface VisualState {
     isStart: boolean;              // Whether this is the start state
     isAccepting: boolean;          // Whether this is an accepting state
     isSelected: boolean;           // Whether this state is currently selected
+    isFrontier: boolean;           // Whether this state is in the simulation frontier
 }
 
 /**
@@ -45,5 +46,12 @@ export const STATE_CONFIG = {
         fillColor: 0x1E1F18,       // Blue fill
         strokeColor: 0xFDFFE0,     // Cream stroke
         strokeWidth: 0.01,
+    },
+
+    // Frontier state appearance (during simulation)
+    frontier: {
+        fillColor: 0x1E1F18,       // Keep base fill
+        strokeColor: 0xA6E22E,     // Bright green stroke
+        strokeWidth: 0.015,        // Slightly thicker
     },
 } as const;
