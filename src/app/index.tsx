@@ -21,6 +21,19 @@ function AppContent() {
     React.useEffect(() => {
         if (!canvasRef.current) return;
 
+        // Ensure fonts are loaded before initializing the app
+        const loadFonts = async () => {
+            try {
+                // Load both fonts using the Font Loading API
+                await Promise.all([
+                    document.fonts.load('bold 64px Satoshi'),
+                    document.fonts.load('bold 64px "Computer Modern"'),
+                ]);
+            } catch (error) {
+                console.warn('Font loading failed, using fallback fonts:', error);
+            }
+        };
+
         // Initialize Three.js
         initThreeApp(canvasRef.current);
         const cam = getCamera();
@@ -30,25 +43,28 @@ function AppContent() {
         setCamera(cam);
 
         if (scene && eventHandlers) {
-            // Initialize StateManager
-            const stateManager = new StateManager(scene.getThreeScene());
-            stateManagerRef.current = stateManager;
+            // Wait for fonts to load before initializing StateManager
+            loadFonts().then(() => {
+                // Initialize StateManager
+                const stateManager = new StateManager(scene.getThreeScene());
+                stateManagerRef.current = stateManager;
 
-            // Immediately sync font from app state
-            stateManager.setFont(state.selectedFont);
+                // Immediately sync font from app state
+                stateManager.setFont(state.selectedFont);
 
-            // Initialize SelectionBox
-            const selectionBox = new SelectionBox(scene.getThreeScene());
+                // Initialize SelectionBox
+                const selectionBox = new SelectionBox(scene.getThreeScene());
 
-            // Initialize InteractionManager
-            const interactionManager = new InteractionManager(stateManager, selectionBox);
-            interactionManagerRef.current = interactionManager;
+                // Initialize InteractionManager
+                const interactionManager = new InteractionManager(stateManager, selectionBox);
+                interactionManagerRef.current = interactionManager;
 
-            // Register all event handlers
-            eventHandlers.onCanvasClick(interactionManager.getClickHandler());
-            eventHandlers.onMouseDown(interactionManager.getMouseDownHandler());
-            eventHandlers.onMouseMove(interactionManager.getMouseMoveHandler());
-            eventHandlers.onMouseUp(interactionManager.getMouseUpHandler());
+                // Register all event handlers
+                eventHandlers.onCanvasClick(interactionManager.getClickHandler());
+                eventHandlers.onMouseDown(interactionManager.getMouseDownHandler());
+                eventHandlers.onMouseMove(interactionManager.getMouseMoveHandler());
+                eventHandlers.onMouseUp(interactionManager.getMouseUpHandler());
+            });
         }
     }, []);
 
