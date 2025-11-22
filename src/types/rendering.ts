@@ -35,7 +35,7 @@ export const STATE_CONFIG = {
 
     // Accepting state appearance
     accepting: {
-        fillColor: 0x90EE90,       // Light green fill
+        fillColor: 0x1E1F18,       // Light green fill
         strokeColor: 0x35362E,     // Cream stroke
         strokeWidth: 0.01,
     },

@@ -7,7 +7,7 @@ export const ZoomControl: React.FC = () => {
   const zoomPercentage = Math.round(currentZoom * 100);
 
   return (
-    <div className="absolute bottom-4 left-4 bg-[#10100E] rounded-lg border border-[#30302B] border-opacity-20 z-10 flex items-center gap-1">
+    <div className="absolute bottom-4 left-4 bg-[#10100E] rounded-lg border border-[#30302B] z-10 flex items-center gap-1">
       <button
         className="p-2 rounded-l-lg bg-transparent hover:bg-[#FFFFE3] hover:bg-opacity-10 transition-all cursor-pointer text-[#FFFFE3]"
         onClick={zoomOut}
