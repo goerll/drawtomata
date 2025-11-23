@@ -268,7 +268,7 @@ export class InteractionManager {
             this.dragStartPos = worldPosition.clone();
             this.dragMode = 'box';
             this.boxSelectionStart = worldPosition.clone();
-            this.selectionBox.start(worldPosition);
+            this.selectionBox.start();
         }
     }
 
