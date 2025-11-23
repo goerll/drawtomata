@@ -11,7 +11,7 @@ import { Toolbar } from "../components/Toolbar";
 import { ZoomControl } from "../components/ZoomControl";
 import { TransitionModal } from "../components/TransitionModal";
 import { AutomatonDefinitionSidebar } from "../components/AutomatonDefinitionSidebar";
-import { SimulationPanel, SimulationStatus } from "../components/SimulationPanel";
+import { SimulationStatus } from "../components/SimulationPanel";
 import { Automaton } from "../core/automaton/Automaton";
 import { AutomatonDefinition } from "../types/automaton";
 import { CameraProvider } from "../contexts/CameraContext";
