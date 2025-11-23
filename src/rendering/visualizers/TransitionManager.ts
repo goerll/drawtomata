@@ -50,6 +50,11 @@ export class TransitionManager {
             ...visual,
         };
 
+        // Set renderOrder to ensure transitions render behind states (default is 0)
+        visual.curve.renderOrder = 0;
+        visual.arrowHead.renderOrder = 0;
+        visual.label.renderOrder = 0;
+
         this.transitions.set(id, transition);
         this.scene.add(visual.curve);
         this.scene.add(visual.arrowHead);
@@ -64,6 +69,39 @@ export class TransitionManager {
     public removeTransition(id: string): void {
         const transition = this.transitions.get(id);
         if (transition) {
+            // Dispose of label sprite resources
+            if (transition.label.material.map) {
+                transition.label.material.map.dispose();
+            }
+            transition.label.material.dispose();
+
+            // Dispose of curve and arrow materials/geometries
+            transition.curve.traverse((child) => {
+                if (child instanceof THREE.Mesh) {
+                    if (Array.isArray(child.material)) {
+                        child.material.forEach(mat => mat.dispose());
+                    } else {
+                        child.material.dispose();
+                    }
+                    if (child.geometry) {
+                        child.geometry.dispose();
+                    }
+                }
+            });
+
+            transition.arrowHead.traverse((child) => {
+                if (child instanceof THREE.Mesh) {
+                    if (Array.isArray(child.material)) {
+                        child.material.forEach(mat => mat.dispose());
+                    } else {
+                        child.material.dispose();
+                    }
+                    if (child.geometry) {
+                        child.geometry.dispose();
+                    }
+                }
+            });
+
             this.scene.remove(transition.curve);
             this.scene.remove(transition.arrowHead);
             this.scene.remove(transition.label);
@@ -80,8 +118,14 @@ export class TransitionManager {
 
         transition.symbols = symbols;
 
-        // Recreate label with new symbols
+        // Dispose of old label resources to prevent memory leak
+        if (transition.label.material.map) {
+            transition.label.material.map.dispose();
+        }
+        transition.label.material.dispose();
         this.scene.remove(transition.label);
+
+        // Recreate label with new symbols
         const labelText = symbols.join(',');
         const newLabel = this.createTextLabel(labelText);
         newLabel.position.copy(transition.label.position);

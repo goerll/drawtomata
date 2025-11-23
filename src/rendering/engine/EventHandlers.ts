@@ -1,9 +1,9 @@
 import * as THREE from 'three';
 import { Camera } from './Camera';
-import { PAN_CONFIG } from '../config/constants';
 
 export type ClickCallback = (worldPosition: THREE.Vector2) => void;
 export type MouseCallback = (worldPosition: THREE.Vector2, event: MouseEvent) => void;
+export type KeyboardCallback = (event: KeyboardEvent) => void;
 
 export class EventHandlers {
     private camera: Camera;
@@ -13,6 +13,7 @@ export class EventHandlers {
     private mouseDownCallbacks: MouseCallback[];
     private mouseMoveCallbacks: MouseCallback[];
     private mouseUpCallbacks: MouseCallback[];
+    private keydownCallbacks: KeyboardCallback[];
     private canvas: HTMLCanvasElement | null;
 
     constructor(camera: Camera, canvas?: HTMLCanvasElement) {
@@ -23,6 +24,7 @@ export class EventHandlers {
         this.mouseDownCallbacks = [];
         this.mouseMoveCallbacks = [];
         this.mouseUpCallbacks = [];
+        this.keydownCallbacks = [];
         this.canvas = canvas || null;
     }
 
@@ -188,14 +190,28 @@ export class EventHandlers {
 
         window.addEventListener('mousemove', (event: MouseEvent) => {
             if (this.isPanning) {
-                const deltaX = (event.clientX - this.lastMousePosition.x) * PAN_CONFIG.speed;
-                const deltaY = (event.clientY - this.lastMousePosition.y) * PAN_CONFIG.speed;
+                // Calculate screen space delta in pixels
+                const screenDeltaX = event.clientX - this.lastMousePosition.x;
+                const screenDeltaY = event.clientY - this.lastMousePosition.y;
 
-                // Scale pan movement by current zoom level for precision
-                const scaledDeltaX = deltaX / this.camera.getCurrentZoom();
-                const scaledDeltaY = deltaY / this.camera.getCurrentZoom();
+                // Convert screen delta to world space
+                // For orthographic camera, we need to account for:
+                // 1. The camera's view size (how much of world space is visible)
+                // 2. The current zoom level (camera.zoom)
+                // 3. The screen dimensions
+                const threeCamera = this.camera.getThreeCamera();
+                const zoom = this.camera.getCurrentZoom();
 
-                this.camera.pan(-scaledDeltaX, scaledDeltaY);
+                // Calculate world space per pixel
+                // Orthographic view width = (right - left) / zoom
+                const worldWidth = (threeCamera.right - threeCamera.left) / zoom;
+                const worldHeight = (threeCamera.top - threeCamera.bottom) / zoom;
+
+                const worldDeltaX = (screenDeltaX / window.innerWidth) * worldWidth;
+                const worldDeltaY = (screenDeltaY / window.innerHeight) * worldHeight;
+
+                // Pan camera (negative X because moving right should pan left, positive Y because screen Y is inverted)
+                this.camera.pan(-worldDeltaX, worldDeltaY);
                 this.lastMousePosition.set(event.clientX, event.clientY);
             }
         });
@@ -211,8 +227,25 @@ export class EventHandlers {
         });
     }
 
+    /**
+     * Register a callback for keydown events
+     */
+    public onKeyDown(callback: KeyboardCallback): () => void {
+        this.keydownCallbacks.push(callback);
+        return () => {
+            const index = this.keydownCallbacks.indexOf(callback);
+            if (index > -1) {
+                this.keydownCallbacks.splice(index, 1);
+            }
+        };
+    }
+
     public setupKeyboardHandlers(): void {
         window.addEventListener('keydown', (event: KeyboardEvent) => {
+            // Trigger all registered callbacks first
+            this.keydownCallbacks.forEach(callback => callback(event));
+
+            // Built-in camera reset with Space
             if (event.code === 'Space') {
                 event.preventDefault();
                 this.camera.resetCamera();

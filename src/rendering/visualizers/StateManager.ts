@@ -15,7 +15,7 @@ export class StateManager {
         this.states = new Map();
         this.scene = scene;
         this.stateCounter = 0;
-        this.currentFont = FontType.COMPUTER_MODERN;
+        this.currentFont = FontType.SATOSHI;
     }
 
     /**
@@ -27,6 +27,9 @@ export class StateManager {
         // Create visual group for this state
         const stateGroup = this.createStateVisual(id, isStart, isAccepting);
         stateGroup.position.set(position.x, position.y, 0);
+
+        // Set renderOrder to ensure states render on top of transitions
+        stateGroup.renderOrder = 1;
 
         const visualState: VisualState = {
             id,
@@ -44,12 +47,29 @@ export class StateManager {
         return visualState;
     }
 
-    /**
-     * Removes a state by ID
-     */
     public removeState(id: string): void {
         const state = this.states.get(id);
         if (state) {
+            // Properly dispose of Three.js resources to prevent memory leaks
+            state.mesh.traverse((child) => {
+                if (child instanceof THREE.Sprite) {
+                    const sprite = child as THREE.Sprite;
+                    if (sprite.material.map) {
+                        sprite.material.map.dispose();
+                    }
+                    sprite.material.dispose();
+                } else if (child instanceof THREE.Mesh) {
+                    const mesh = child as THREE.Mesh;
+                    if (Array.isArray(mesh.material)) {
+                        mesh.material.forEach(mat => mat.dispose());
+                    } else {
+                        mesh.material.dispose();
+                    }
+                    if (mesh.geometry) {
+                        mesh.geometry.dispose();
+                    }
+                }
+            });
             this.scene.remove(state.mesh);
             this.states.delete(id);
         }

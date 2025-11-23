@@ -10,7 +10,7 @@ interface ToolbarButtonProps {
   onClick: () => void;
 }
 
-const ToolbarButton: React.FC<ToolbarButtonProps> = ({ icon, title, isActive, onClick }) => {
+const ToolbarButton: React.FC<ToolbarButtonProps> = React.memo(({ icon, title, isActive, onClick }) => {
   return (
     <button
       className={`p-3 rounded-md transition-all cursor-pointer border ${isActive
@@ -25,7 +25,7 @@ const ToolbarButton: React.FC<ToolbarButtonProps> = ({ icon, title, isActive, on
       })}
     </button>
   );
-};
+});
 
 export const Toolbar: React.FC = () => {
   const { state, setMode } = useAppState();

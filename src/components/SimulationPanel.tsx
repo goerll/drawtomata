@@ -18,7 +18,7 @@ interface SimulationPanelProps {
     onTogglePlay: () => void;
 }
 
-export const SimulationPanel: React.FC<SimulationPanelProps> = ({
+export const SimulationPanel: React.FC<SimulationPanelProps> = React.memo(({
     status,
     onStart,
     onStep,
@@ -45,7 +45,7 @@ export const SimulationPanel: React.FC<SimulationPanelProps> = ({
                         className={`px-2 py-1 rounded ${index < status.currentPosition
                             ? 'bg-[#30302B] text-[#888888]' // Processed
                             : index === status.currentPosition
-                                ? 'bg-[#A6E22E] bg-opacity-20 text-[#A6E22E] border border-[#A6E22E]' // Current
+                                ? 'bg-[#FFFFE3] border border-[#FFFFE3] text-[#10100E]' // Current
                                 : 'bg-transparent text-[#FFFFE3]' // Unprocessed
                             }`}
                     >
@@ -77,13 +77,13 @@ export const SimulationPanel: React.FC<SimulationPanelProps> = ({
                     onKeyDown={(e) => e.key === 'Enter' && handleStart()}
                     placeholder="Enter test string..."
                     disabled={hasSimulation}
-                    className="w-full px-3 py-2 bg-[#1E1F18] border border-[#30302B] rounded-lg text-[#FFFFE3] font-mono text-sm placeholder-[#888888] focus:outline-none focus:ring-1 focus:ring-[#A6E22E] disabled:opacity-50"
+                    className="w-full px-3 py-2 bg-[#1E1F18] border border-[#30302B] rounded-lg text-[#FFFFE3] font-mono text-sm placeholder-[#888888] focus:outline-none focus:ring-1 focus:ring-[#30302B] disabled:opacity-50"
                 />
                 {!hasSimulation && (
                     <button
                         onClick={handleStart}
                         disabled={!inputValue.trim()}
-                        className="w-full px-4 py-2 bg-[#A6E22E] bg-opacity-20 hover:bg-opacity-30 border border-[#A6E22E] rounded-lg text-[#A6E22E] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="w-full px-4 py-2 bg-[#FFFFE3] border border-[#FFFFE3] rounded-lg text-[#10100E] hover:opacity-90 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                         Start
                     </button>
@@ -93,7 +93,7 @@ export const SimulationPanel: React.FC<SimulationPanelProps> = ({
             {/* String Visualization */}
             <div className={`p-3 bg-[#1E1F18] border border-[#30302B] rounded-lg ${!hasSimulation ? 'opacity-50' : ''}`}>
                 {hasSimulation ? renderStringVisualization() : (
-                    <div className="text-[#888888] text-sm italic">String visualization will appear here</div>
+                    <div className="text-[#888888] text-sm italic"></div>
                 )}
             </div>
 
@@ -120,7 +120,7 @@ export const SimulationPanel: React.FC<SimulationPanelProps> = ({
                 <button
                     onClick={onTogglePlay}
                     disabled={status.isComplete}
-                    className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-[#A6E22E] bg-opacity-20 hover:bg-opacity-30 border border-[#A6E22E] rounded-lg text-[#A6E22E] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-[#FFFFE3] border border-[#FFFFE3] rounded-lg text-[#10100E] hover:opacity-90 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                     {status.isRunning ? (
                         <>
@@ -152,4 +152,4 @@ export const SimulationPanel: React.FC<SimulationPanelProps> = ({
             </div>
         </div>
     );
-};
+});

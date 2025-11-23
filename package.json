@@ -6,6 +6,8 @@
     "scripts": {
         "dev": "vite",
         "build": "tsc && vite build",
+        "serve": "serve -s dist",
+        "start": "serve -s dist"
         "preview": "vite preview"
     },
     "dependencies": {

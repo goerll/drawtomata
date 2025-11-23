@@ -50,6 +50,7 @@ export function initThreeApp(canvas: HTMLCanvasElement): void {
     eventHandlers.setupWheelHandler();
     eventHandlers.setupResizeHandler(renderer);
     eventHandlers.setupPanHandlers();
+    eventHandlers.setupKeyboardHandlers();
 
     // Render loop
     const animate = () => {

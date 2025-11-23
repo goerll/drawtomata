@@ -7,6 +7,7 @@ interface AutomatonDefinitionSidebarProps {
     selectedStateId: string | null;
     onToggleInitial: (id: string) => void;
     onToggleAccepting: (id: string) => void;
+    onDeleteState: (id: string) => void;
     simulationStatus: SimulationStatus;
     onSimulationStart: (input: string) => void;
     onSimulationStep: () => void;
@@ -19,6 +20,7 @@ export const AutomatonDefinitionSidebar: React.FC<AutomatonDefinitionSidebarProp
     selectedStateId,
     onToggleInitial,
     onToggleAccepting,
+    onDeleteState,
     simulationStatus,
     onSimulationStart,
     onSimulationStep,
@@ -55,7 +57,7 @@ export const AutomatonDefinitionSidebar: React.FC<AutomatonDefinitionSidebarProp
     const isInitial = selectedStateId ? startState === selectedStateId : false;
     const isAccepting = selectedStateId ? acceptStates.includes(selectedStateId) : false;
 
-    const [activeTab, setActiveTab] = React.useState<'automaton' | 'test'>('automaton');
+    const [activeTab, setActiveTab] = React.useState<'automaton' | 'string'>('automaton');
 
     return (
         <div className="absolute left-4 top-24 bottom-24 w-64 bg-[#10100E] bg-opacity-60 backdrop-blur-xl border border-[#30302B] border-opacity-50 rounded-lg p-4 overflow-y-auto text-[#FFFFE3] font-mono text-sm shadow-lg z-10 flex flex-col gap-6">
@@ -64,26 +66,26 @@ export const AutomatonDefinitionSidebar: React.FC<AutomatonDefinitionSidebarProp
             <div className="flex gap-2 pb-4 border-b border-[#30302B]">
                 <button
                     onClick={() => setActiveTab('automaton')}
-                    className={`flex-1 px-3 py-2 rounded-lg font-semibold text-xs uppercase tracking-wider transition-all ${activeTab === 'automaton'
-                        ? 'bg-[#A6E22E] bg-opacity-20 text-[#A6E22E] border border-[#A6E22E]'
-                        : 'bg-transparent text-[#888888] border border-[#30302B] hover:bg-[#30302B]'
+                    className={`flex-1 px-3 py-2 rounded-lg font-semibold text-xs uppercase tracking-wider transition-all border ${activeTab === 'automaton'
+                        ? 'bg-[#FFFFE3] border-[#FFFFE3] text-[#10100E]'
+                        : 'bg-transparent border-[#30302B] hover:bg-[#30302B] text-[#888888]'
                         }`}
                 >
                     Automaton
                 </button>
                 <button
-                    onClick={() => setActiveTab('test')}
-                    className={`flex-1 px-3 py-2 rounded-lg font-semibold text-xs uppercase tracking-wider transition-all ${activeTab === 'test'
-                        ? 'bg-[#A6E22E] bg-opacity-20 text-[#A6E22E] border border-[#A6E22E]'
-                        : 'bg-transparent text-[#888888] border border-[#30302B] hover:bg-[#30302B]'
+                    onClick={() => setActiveTab('string')}
+                    className={`flex-1 px-3 py-2 rounded-lg font-semibold text-xs uppercase tracking-wider transition-all border ${activeTab === 'string'
+                        ? 'bg-[#FFFFE3] border-[#FFFFE3] text-[#10100E]'
+                        : 'bg-transparent border-[#30302B] hover:bg-[#30302B] text-[#888888]'
                         }`}
                 >
-                    Test
+                    String
                 </button>
             </div>
 
             {/* Test Tab Content */}
-            {activeTab === 'test' && (
+            {activeTab === 'string' && (
                 <SimulationPanel
                     status={simulationStatus}
                     onStart={onSimulationStart}
@@ -131,6 +133,14 @@ export const AutomatonDefinitionSidebar: React.FC<AutomatonDefinitionSidebarProp
                                     />
                                 </button>
                             </div>
+
+                            {/* Delete State Button */}
+                            <button
+                                onClick={() => selectedStateId && onDeleteState(selectedStateId)}
+                                className="w-full px-3 py-2 mt-2 bg-transparent hover:bg-[#30302B] border border-[#30302B] rounded-lg text-[#888888] hover:text-[#FFFFE3] text-sm transition-all"
+                            >
+                                Delete State
+                            </button>
                         </div>
                     </div>
 
@@ -170,7 +180,7 @@ export const AutomatonDefinitionSidebar: React.FC<AutomatonDefinitionSidebarProp
                     <div className="flex-grow">
                         <div className="text-[#888888] text-xs mb-2 uppercase tracking-wider">Transitions (δ)</div>
                         {transitions.length === 0 ? (
-                            <div className="text-[#444444] italic">No transitions defined</div>
+                            <div className="text-[#444444] italic">-</div>
                         ) : (
                             <table className="w-full text-left border-collapse">
                                 <thead>

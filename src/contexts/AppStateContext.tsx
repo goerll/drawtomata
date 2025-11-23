@@ -24,7 +24,7 @@ const AppStateContext = createContext<AppStateContextType | undefined>(undefined
 export const AppStateProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const [state, setState] = useState<AppState>({
         currentMode: InteractionMode.SELECT,
-        selectedFont: FontType.COMPUTER_MODERN,
+        selectedFont: FontType.SATOSHI,
         gridSnapping: true,
     });
 

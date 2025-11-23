@@ -281,6 +281,45 @@ function AppContent() {
                 eventHandlers.onMouseDown(interactionManager.getMouseDownHandler());
                 eventHandlers.onMouseMove(interactionManager.getMouseMoveHandler());
                 eventHandlers.onMouseUp(interactionManager.getMouseUpHandler());
+
+                // Register keyboard handler for deleting selected states
+                eventHandlers.onKeyDown((event: KeyboardEvent) => {
+                    // Check if Delete or Backspace was pressed
+                    if (event.key === 'Delete' || event.key === 'Backspace') {
+                        // Don't trigger if user is typing in an input field
+                        const target = event.target as HTMLElement;
+                        if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA') {
+                            return;
+                        }
+
+                        event.preventDefault();
+
+                        // Get all selected states
+                        const selectedStates = stateManager.getSelectedStates();
+
+                        if (selectedStates.length > 0) {
+                            // Delete each selected state
+                            selectedStates.forEach(state => {
+                                // Remove all transitions connected to this state
+                                const allTransitions = transitionManager.getAllTransitions();
+                                allTransitions.forEach(transition => {
+                                    if (transition.fromStateId === state.id || transition.toStateId === state.id) {
+                                        transitionManager.removeTransition(transition.id);
+                                    }
+                                });
+
+                                // Remove the state itself
+                                stateManager.removeState(state.id);
+                            });
+
+                            // Clear selection
+                            setSelectedStateId(null);
+
+                            // Update automaton definition
+                            updateDefinition();
+                        }
+                    }
+                });
             });
         }
     }, []);
@@ -343,11 +382,32 @@ function AppContent() {
         }
     };
 
-    const handleToggleAccepting = (id: string) => {
+    const handleToggleAccepting = React.useCallback((id: string) => {
         if (interactionManagerRef.current) {
             interactionManagerRef.current.toggleStateAccepting(id);
         }
-    };
+    }, []);
+
+    const handleDeleteState = React.useCallback((id: string) => {
+        if (!stateManagerRef.current || !transitionManagerRef.current) return;
+
+        // Remove all transitions connected to this state
+        const allTransitions = transitionManagerRef.current.getAllTransitions();
+        allTransitions.forEach(transition => {
+            if (transition.fromStateId === id || transition.toStateId === id) {
+                transitionManagerRef.current!.removeTransition(transition.id);
+            }
+        });
+
+        // Remove the state itself
+        stateManagerRef.current.removeState(id);
+
+        // Clear selection
+        setSelectedStateId(null);
+
+        // Update automaton definition
+        updateDefinition();
+    }, [updateDefinition]);
 
     return (
         <CameraProvider camera={camera}>
@@ -372,6 +432,7 @@ function AppContent() {
                     selectedStateId={selectedStateId}
                     onToggleInitial={handleToggleInitial}
                     onToggleAccepting={handleToggleAccepting}
+                    onDeleteState={handleDeleteState}
                     simulationStatus={simulationStatus}
                     onSimulationStart={handleSimulationStart}
                     onSimulationStep={handleSimulationStep}
