@@ -7,7 +7,7 @@
         "dev": "vite",
         "build": "tsc && vite build",
         "preview": "vite preview",
-        "start": "vite preview --host"
+        "start": "npx http-server dist -p 4173 -c-1"
     },
     "dependencies": {
         "@react-three/drei": "^9.88.0",
