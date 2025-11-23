@@ -17,7 +17,7 @@ export class SelectionBox {
     /**
      * Start selection box at a position
      */
-    public start(position: THREE.Vector2): void {
+    public start(): void {
         this.clear();
         this.isVisible = true;
     }
