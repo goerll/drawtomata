@@ -25,7 +25,7 @@ export const AppStateProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     const [state, setState] = useState<AppState>({
         currentMode: InteractionMode.SELECT,
         selectedFont: FontType.SATOSHI,
-        gridSnapping: true,
+        gridSnapping: false,
     });
 
     const setMode = (mode: InteractionMode) => {

@@ -60,28 +60,35 @@ export const AutomatonDefinitionSidebar: React.FC<AutomatonDefinitionSidebarProp
     const [activeTab, setActiveTab] = React.useState<'automaton' | 'string'>('automaton');
 
     return (
-        <div className="absolute left-4 top-24 bottom-24 w-64 bg-[#10100E] bg-opacity-60 backdrop-blur-xl border border-[#30302B] border-opacity-50 rounded-lg p-4 overflow-y-auto text-[#FFFFE3] font-mono text-sm shadow-lg z-10 flex flex-col gap-6">
+        <div className="absolute left-4 top-24 bottom-24 w-64 bg-[#1F1D19] bg-opacity-60 backdrop-blur-xl border border-[#30302B] border-opacity-50 rounded-lg p-4 overflow-y-auto text-[#FFFFE3] font-mono text-sm shadow-lg z-10 flex flex-col gap-6">
 
-            {/* Tab Navigation */}
-            <div className="flex gap-2 pb-4 border-b border-[#30302B]">
-                <button
-                    onClick={() => setActiveTab('automaton')}
-                    className={`flex-1 px-3 py-2 rounded-lg font-semibold text-xs uppercase tracking-wider transition-all border ${activeTab === 'automaton'
-                        ? 'bg-[#FFFFE3] border-[#FFFFE3] text-[#10100E]'
-                        : 'bg-transparent border-[#30302B] hover:bg-[#30302B] text-[#888888]'
-                        }`}
-                >
-                    Automaton
-                </button>
-                <button
-                    onClick={() => setActiveTab('string')}
-                    className={`flex-1 px-3 py-2 rounded-lg font-semibold text-xs uppercase tracking-wider transition-all border ${activeTab === 'string'
-                        ? 'bg-[#FFFFE3] border-[#FFFFE3] text-[#10100E]'
-                        : 'bg-transparent border-[#30302B] hover:bg-[#30302B] text-[#888888]'
-                        }`}
-                >
-                    String
-                </button>
+            {/* Pill Toggle Navigation */}
+            <div className="pb-4 border-b border-[#30302B]">
+                <div className="relative bg-[#30302B] bg-opacity-30 rounded-full p-1 flex">
+                    <button
+                        onClick={() => setActiveTab('automaton')}
+                        className={`flex-1 px-3 py-2 rounded-full font-semibold text-xs uppercase tracking-wider transition-all z-10 ${activeTab === 'automaton'
+                            ? 'text-[#1F1D19]'
+                            : 'text-[#888888] hover:text-[#FFFFE3]'
+                            }`}
+                    >
+                        Automaton
+                    </button>
+                    <button
+                        onClick={() => setActiveTab('string')}
+                        className={`flex-1 px-3 py-2 rounded-full font-semibold text-xs uppercase tracking-wider transition-all z-10 ${activeTab === 'string'
+                            ? 'text-[#1F1D19]'
+                            : 'text-[#888888] hover:text-[#FFFFE3]'
+                            }`}
+                    >
+                        String
+                    </button>
+                    {/* Sliding background pill */}
+                    <div
+                        className={`absolute top-1 bottom-1 w-[calc(50%-0.25rem)] bg-[#FFFFE3] rounded-full transition-all duration-300 ease-in-out ${activeTab === 'automaton' ? 'left-1' : 'left-[calc(50%+0.25rem)]'
+                            }`}
+                    />
+                </div>
             </div>
 
             {/* Test Tab Content */}
@@ -109,7 +116,7 @@ export const AutomatonDefinitionSidebar: React.FC<AutomatonDefinitionSidebarProp
                                 <span className="text-sm">Initial State</span>
                                 <button
                                     onClick={() => selectedStateId && onToggleInitial(selectedStateId)}
-                                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-1 focus:ring-[#30302B] focus:ring-offset-2 focus:ring-offset-[#10100E] ${isInitial ? 'bg-[#FFFFE3]' : 'bg-[#30302B]'
+                                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-1 focus:ring-[#30302B] focus:ring-offset-2 focus:ring-offset-[#1F1D19] ${isInitial ? 'bg-[#FFFFE3]' : 'bg-[#30302B]'
                                         }`}
                                 >
                                     <span
@@ -124,7 +131,7 @@ export const AutomatonDefinitionSidebar: React.FC<AutomatonDefinitionSidebarProp
                                 <span className="text-sm">Accepting State</span>
                                 <button
                                     onClick={() => selectedStateId && onToggleAccepting(selectedStateId)}
-                                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-1 focus:ring-[#30302B] focus:ring-offset-2 focus:ring-offset-[#10100E] ${isAccepting ? 'bg-[#FFFFE3]' : 'bg-[#30302B]'
+                                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-1 focus:ring-[#30302B] focus:ring-offset-2 focus:ring-offset-[#1F1D19] ${isAccepting ? 'bg-[#FFFFE3]' : 'bg-[#30302B]'
                                         }`}
                                 >
                                     <span

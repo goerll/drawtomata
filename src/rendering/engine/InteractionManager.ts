@@ -5,6 +5,7 @@ import type { TransitionManager } from '../visualizers/TransitionManager';
 import type { SelectionBox } from '../visualizers/SelectionBox';
 import type { ClickCallback, MouseCallback } from './EventHandlers';
 import { GRID_CONFIG } from '../config/constants';
+import { markSceneDirty } from './initThreeJS';
 
 /**
  * Manages interactions based on the current mode
@@ -43,7 +44,7 @@ export class InteractionManager {
         this.draggedStates = new Set();
         this.draggedStatesOriginalPositions = new Map();
         this.boxSelectionStart = null;
-        this.gridSnapping = true;
+        this.gridSnapping = false;
         this.pendingTransitionFrom = null;
     }
 
@@ -68,12 +69,14 @@ export class InteractionManager {
         if (mode !== InteractionMode.SELECT) {
             this.stateManager.deselectAll();
             this.triggerSelectionChange(null);
+            markSceneDirty();
         }
         // Clear pending transition when leaving transition mode
         if (mode !== InteractionMode.ADD_TRANSITION) {
             if (this.pendingTransitionFrom) {
                 this.stateManager.deselectState(this.pendingTransitionFrom);
                 this.pendingTransitionFrom = null;
+                markSceneDirty();
             }
         }
     }
@@ -152,6 +155,7 @@ export class InteractionManager {
             }
             this.stateManager.updateState(id, { isStart: !state.isStart });
             this.triggerAutomatonUpdate();
+            markSceneDirty();
         }
     }
 
@@ -163,6 +167,7 @@ export class InteractionManager {
         if (state) {
             this.stateManager.updateState(id, { isAccepting: !state.isAccepting });
             this.triggerAutomatonUpdate();
+            markSceneDirty();
         }
     }
 
@@ -236,6 +241,7 @@ export class InteractionManager {
                 this.stateManager.deselectAll();
                 this.stateManager.selectState(clickedState.id);
                 this.triggerSelectionChange(clickedState.id);
+                markSceneDirty();
             } else {
                 // Already selected, just trigger update (might be part of multi-selection later)
                 // If it's the only one selected, notify
@@ -263,6 +269,7 @@ export class InteractionManager {
             // Clicked on empty space - deselect all and start box selection
             this.stateManager.deselectAll();
             this.triggerSelectionChange(null);
+            markSceneDirty();
 
             this.isDragging = true;
             this.dragStartPos = worldPosition.clone();
@@ -295,9 +302,11 @@ export class InteractionManager {
                     }
                 }
             });
+            markSceneDirty();
         } else if (this.dragMode === 'box' && this.boxSelectionStart) {
             // Update selection box
             this.selectionBox.update(this.boxSelectionStart, worldPosition);
+            markSceneDirty();
         }
     }
 
@@ -332,6 +341,7 @@ export class InteractionManager {
             }
 
             this.selectionBox.clear();
+            markSceneDirty();
         }
 
         // Reset drag state
@@ -359,69 +369,63 @@ export class InteractionManager {
         }
 
         this.triggerAutomatonUpdate();
+        markSceneDirty();
     }
 
     /**
      * Handle adding a transition between two states
      */
+    /**
+     * Handle adding a transition between two states
+     */
     private handleAddTransition(worldPosition: THREE.Vector2): void {
-        // Check if clicked on a transition first (prioritize editing)
+        // 1. Check for existing transition click (Edit Mode)
         if (this.transitionManager) {
             const clickedTransition = this.transitionManager.getTransitionAtPosition(worldPosition);
-
             if (clickedTransition) {
                 console.log(`Clicked transition: ${clickedTransition.id}`);
-                if (this.onEditTransitionCallback) {
-                    this.onEditTransitionCallback(clickedTransition.id, clickedTransition.symbols);
-                }
-                // Clear any pending state selection
+                this.onEditTransitionCallback?.(clickedTransition.id, clickedTransition.symbols);
+
+                // Reset any pending operation
                 if (this.pendingTransitionFrom) {
                     this.stateManager.deselectState(this.pendingTransitionFrom);
                     this.pendingTransitionFrom = null;
+                    markSceneDirty();
                 }
                 return;
             }
         }
 
+        // 2. Check for state click (Creation Mode)
         const clickedState = this.stateManager.getStateAtPosition(worldPosition);
-
-        if (!clickedState) {
-            // Clicked on empty space
-            return;
-        }
+        if (!clickedState) return; // Clicked on empty space
 
         if (!this.pendingTransitionFrom) {
-            // First click: select the source state
+            // Step 1: Select source state
             this.pendingTransitionFrom = clickedState.id;
             this.stateManager.selectState(clickedState.id);
             console.log(`Selected source state: ${clickedState.id}`);
+            markSceneDirty(); // Visual feedback for selection
         } else {
-            // Second click: create transition
+            // Step 2: Select target state and create/edit transition
             const fromId = this.pendingTransitionFrom;
             const toId = clickedState.id;
 
             // Check if transition already exists
-            let existingTransition = null;
-            if (this.transitionManager) {
-                existingTransition = this.transitionManager.getTransitionByStates(fromId, toId);
-            }
+            const existingTransition = this.transitionManager?.getTransitionByStates(fromId, toId);
 
             if (existingTransition) {
                 console.log(`Transition already exists: ${existingTransition.id}, editing instead`);
-                if (this.onEditTransitionCallback) {
-                    this.onEditTransitionCallback(existingTransition.id, existingTransition.symbols);
-                }
+                this.onEditTransitionCallback?.(existingTransition.id, existingTransition.symbols);
             } else {
                 console.log(`Creating transition: ${fromId} -> ${toId}`);
-                // Notify callback if registered
-                if (this.onAddTransitionCallback) {
-                    this.onAddTransitionCallback(fromId, toId);
-                }
+                this.onAddTransitionCallback?.(fromId, toId);
             }
 
-            // Clear pending state and visual highlight
+            // Reset state
             this.stateManager.deselectState(fromId);
             this.pendingTransitionFrom = null;
+            markSceneDirty(); // Clear selection visual
         }
     }
 }

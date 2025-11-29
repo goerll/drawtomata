@@ -1,35 +1,31 @@
 import * as THREE from 'three';
 import { CAMERA_CONFIG, ZOOM_CONFIG } from '../config/constants';
+import { markSceneDirty } from './initThreeJS';
 
 export class Camera {
-    private camera!: THREE.OrthographicCamera;
+    private camera: THREE.OrthographicCamera;
     private currentZoom: number;
-    private position: THREE.Vector2;
     private zoomCallbacks: ((zoom: number) => void)[];
 
     constructor() {
-        this.currentZoom = ZOOM_CONFIG.initial;
-        this.position = new THREE.Vector2(0, 0);
-        this.zoomCallbacks = [];
-        this.setupCamera();
-    }
-
-    private setupCamera(): void {
-        const width = window.innerWidth;
-        const height = window.innerHeight;
-        const aspect = width / height;
+        const aspect = window.innerWidth / window.innerHeight;
+        const viewHeight = CAMERA_CONFIG.viewSize;
+        const viewWidth = viewHeight * aspect;
 
         this.camera = new THREE.OrthographicCamera(
-            -aspect * CAMERA_CONFIG.viewSize, // left
-            aspect * CAMERA_CONFIG.viewSize, // right
-            CAMERA_CONFIG.viewSize, // top
-            -CAMERA_CONFIG.viewSize, // bottom
-            CAMERA_CONFIG.near, // near
-            CAMERA_CONFIG.far // far
+            -viewWidth / 2,
+            viewWidth / 2,
+            viewHeight / 2,
+            -viewHeight / 2,
+            CAMERA_CONFIG.near,
+            CAMERA_CONFIG.far
         );
 
-        this.camera.position.z = CAMERA_CONFIG.position.z;
-        this.updatePosition();
+        this.camera.position.set(0, 0, CAMERA_CONFIG.position.z);
+        this.currentZoom = ZOOM_CONFIG.initial;
+        this.camera.zoom = this.currentZoom;
+        this.camera.updateProjectionMatrix();
+        this.zoomCallbacks = [];
     }
 
     public getThreeCamera(): THREE.OrthographicCamera {
@@ -45,15 +41,20 @@ export class Camera {
         this.camera.zoom = this.currentZoom;
         this.camera.updateProjectionMatrix();
         this.notifyZoomChanged();
+        markSceneDirty();
     }
 
     public updateAspect(width: number, height: number): void {
         const aspect = width / height;
-        this.camera.left = -aspect * CAMERA_CONFIG.viewSize;
-        this.camera.right = aspect * CAMERA_CONFIG.viewSize;
-        this.camera.top = CAMERA_CONFIG.viewSize;
-        this.camera.bottom = -CAMERA_CONFIG.viewSize;
+        const viewHeight = CAMERA_CONFIG.viewSize;
+        const viewWidth = viewHeight * aspect;
+
+        this.camera.left = -viewWidth / 2;
+        this.camera.right = viewWidth / 2;
+        this.camera.top = viewHeight / 2;
+        this.camera.bottom = -viewHeight / 2;
         this.camera.updateProjectionMatrix();
+        markSceneDirty();
     }
 
     public zoomIn(): void {
@@ -65,23 +66,20 @@ export class Camera {
     }
 
     public pan(deltaX: number, deltaY: number): void {
-        this.position.x += deltaX;
-        this.position.y += deltaY;
-        this.updatePosition();
+        this.camera.position.x += deltaX;
+        this.camera.position.y += deltaY;
+        // No need to call updateProjectionMatrix for position changes
+        markSceneDirty();
     }
 
-    private updatePosition(): void {
-        this.camera.position.x = this.position.x;
-        this.camera.position.y = this.position.y;
-    }
-
-    public getPosition(): THREE.Vector2 {
-        return this.position.clone();
+    public getPosition(): THREE.Vector3 {
+        return this.camera.position.clone(); // Return a clone to prevent direct modification
     }
 
     public setPosition(x: number, y: number): void {
-        this.position.set(x, y);
-        this.updatePosition();
+        this.camera.position.setX(x);
+        this.camera.position.setY(y);
+        markSceneDirty();
     }
 
     public resetCamera() {

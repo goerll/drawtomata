@@ -21,7 +21,7 @@ const ToolbarButton: React.FC<ToolbarButtonProps> = React.memo(({ icon, title, i
       title={title}
     >
       {React.cloneElement(icon as React.ReactElement, {
-        className: `h-6 w-6 ${isActive ? 'text-[#10100E]' : 'text-[#FFFFE3]'}`
+        className: `h-6 w-6 ${isActive ? 'text-[#1F1D19]' : 'text-[#FFFFE3]'}`
       })}
     </button>
   );
@@ -32,7 +32,7 @@ export const Toolbar: React.FC = () => {
   return (
     <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-10">
       {/* Background dock */}
-      <div className="px-3 py-3 rounded-[12px] bg-[#10100E] bg-opacity-60 backdrop-blur-xl border border-[#30302B] border-opacity-50 flex gap-3 shadow-lg">
+      <div className="px-3 py-3 rounded-[12px] bg-[#1F1D19] bg-opacity-60 backdrop-blur-xl border border-[#30302B] border-opacity-50 flex gap-3 shadow-lg">
         <ToolbarButton
           icon={<MousePointer />}
           title="Select"

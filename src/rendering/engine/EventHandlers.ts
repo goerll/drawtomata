@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { Camera } from './Camera';
+import { markSceneDirty } from './initThreeJS';
 
 export type ClickCallback = (worldPosition: THREE.Vector2) => void;
 export type MouseCallback = (worldPosition: THREE.Vector2, event: MouseEvent) => void;
@@ -167,13 +168,21 @@ export class EventHandlers {
     }
 
     public setupResizeHandler(renderer: THREE.WebGLRenderer): void {
-        window.addEventListener('resize', () => {
+        const handleResize = () => {
             const width = window.innerWidth;
             const height = window.innerHeight;
 
-            renderer.setSize(width, height);
+            // Update camera aspect ratio
             this.camera.updateAspect(width, height);
-        });
+
+            // Update renderer size
+            renderer.setSize(width, height);
+
+            // Mark scene as dirty to trigger re-render
+            markSceneDirty();
+        };
+
+        window.addEventListener('resize', handleResize);
     }
 
     public setupPanHandlers(): void {

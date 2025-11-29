@@ -20,7 +20,7 @@ export const ConfigPanel: React.FC<ConfigPanelProps> = ({ isOpen, onClose }) => 
             />
 
             {/* Config panel */}
-            <div className="absolute top-16 right-4 bg-[#10100E] rounded-lg border border-[#30302B] border-opacity-20 z-20 p-4 min-w-[240px] shadow-xl">
+            <div className="absolute top-16 right-4 bg-[#1F1D19] rounded-lg border border-[#30302B] border-opacity-20 z-20 p-4 min-w-[240px] shadow-xl">
                 <h3 className="text-[#FFFFE3] font-semibold mb-3 text-sm">Settings</h3>
 
                 <div className="space-y-3">

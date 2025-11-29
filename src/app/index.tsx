@@ -1,7 +1,7 @@
 import "../index.css";
 import React from "react";
 import { createRoot } from "react-dom/client";
-import { initThreeApp, getCamera, getScene, getEventHandlers } from "../rendering/engine/initThreeJS";
+import { initThreeApp, getCamera, getScene, getEventHandlers, markSceneDirty } from "../rendering/engine/initThreeJS";
 import { StateManager } from "../rendering/visualizers/StateManager";
 import { TransitionManager } from "../rendering/visualizers/TransitionManager";
 import { SelectionBox } from "../rendering/visualizers/SelectionBox";
@@ -114,6 +114,7 @@ function AppContent() {
         const frontierStates = automatonRef.current.getCurrentFrontierStates();
 
         stateManagerRef.current.highlightFrontierStates(frontierStates);
+        markSceneDirty(); // Ensure visual update
 
         setSimulationStatus({
             isRunning: false,
@@ -137,6 +138,7 @@ function AppContent() {
         if (simState) {
             const frontierStates = automatonRef.current.getCurrentFrontierStates();
             stateManagerRef.current.highlightFrontierStates(frontierStates);
+            markSceneDirty(); // Ensure visual update
 
             setSimulationStatus({
                 isRunning: false,
@@ -163,6 +165,7 @@ function AppContent() {
 
         if (stateManagerRef.current) {
             stateManagerRef.current.clearFrontierHighlight();
+            markSceneDirty(); // Ensure visual update
         }
 
         setSimulationStatus({
@@ -285,7 +288,7 @@ function AppContent() {
                 // Register keyboard handler for deleting selected states
                 eventHandlers.onKeyDown((event: KeyboardEvent) => {
                     // Check if Delete or Backspace was pressed
-                    if (event.key === 'Delete' || event.key === 'Backspace') {
+                    if (event.key === 'Delete' || event.key === 'Backspace' || event.key === 'd') {
                         // Don't trigger if user is typing in an input field
                         const target = event.target as HTMLElement;
                         if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA') {
@@ -368,6 +371,7 @@ function AppContent() {
             if (interactionManagerRef.current) {
                 interactionManagerRef.current.triggerAutomatonUpdate();
             }
+            markSceneDirty(); // Ensure visual update
         }
         setTransitionModal({ isOpen: false, fromId: null, toId: null });
     };
@@ -407,6 +411,7 @@ function AppContent() {
 
         // Update automaton definition
         updateDefinition();
+        markSceneDirty(); // Ensure visual update
     }, [updateDefinition]);
 
     return (

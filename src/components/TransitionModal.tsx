@@ -90,7 +90,7 @@ export const TransitionModal: React.FC<TransitionModalProps> = ({
             {/* Modal */}
             <div className="fixed inset-0 flex items-center justify-center z-50 pointer-events-none">
                 <div
-                    className="bg-[#10100E] rounded-lg border border-[#30302B] p-6 min-w-[400px] shadow-2xl pointer-events-auto"
+                    className="bg-[#1F1D19] rounded-lg border border-[#30302B] p-6 min-w-[400px] shadow-2xl pointer-events-auto"
                     onClick={(e) => e.stopPropagation()}
                 >
                     <h2 className="text-[#FFFFE3] text-xl font-semibold mb-4">
@@ -143,7 +143,7 @@ export const TransitionModal: React.FC<TransitionModalProps> = ({
                             </button>
                             <button
                                 type="submit"
-                                className="px-4 py-2 rounded bg-[#FFFFE3] text-[#10100E] hover:bg-opacity-90 transition-colors font-medium"
+                                className="px-4 py-2 rounded bg-[#FFFFE3] text-[#1F1D19] hover:bg-opacity-90 transition-colors font-medium"
                             >
                                 {isEditing ? 'Update' : 'Create'}
                             </button>

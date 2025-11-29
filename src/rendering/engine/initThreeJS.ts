@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { RENDER_CONFIG } from '../config/constants';
+import { RENDER_CONFIG, PERFORMANCE_CONFIG } from '../config/constants';
 import { Scene } from './Scene';
 import { Camera } from './Camera';
 import { EventHandlers } from './EventHandlers';
@@ -8,6 +8,12 @@ import { EventHandlers } from './EventHandlers';
 let globalCamera: Camera | null = null;
 let globalScene: Scene | null = null;
 let globalEventHandlers: EventHandlers | null = null;
+
+// Dirty flag for conditional rendering
+let needsRender = true;
+let renderer: THREE.WebGLRenderer | null = null;
+let renderScene: Scene | null = null;
+let renderCamera: Camera | null = null;
 
 export function getCamera(): Camera | null {
     return globalCamera;
@@ -21,9 +27,17 @@ export function getEventHandlers(): EventHandlers | null {
     return globalEventHandlers;
 }
 
+/**
+ * Mark the scene as dirty to trigger a re-render
+ * Call this whenever the scene changes
+ */
+export function markSceneDirty(): void {
+    needsRender = true;
+}
+
 export function initThreeApp(canvas: HTMLCanvasElement): void {
     // Renderer setup
-    const renderer = new THREE.WebGLRenderer({
+    renderer = new THREE.WebGLRenderer({
         antialias: RENDER_CONFIG.ANTIALIAS,
         canvas,
         alpha: false, // Ensure opaque background
@@ -39,9 +53,11 @@ export function initThreeApp(canvas: HTMLCanvasElement): void {
 
     // Scene setup
     const scene = new Scene();
+    renderScene = scene;
 
     // Camera setup
     const camera = new Camera();
+    renderCamera = camera;
 
     // Event handlers setup
     const eventHandlers = new EventHandlers(camera, canvas);
@@ -52,10 +68,15 @@ export function initThreeApp(canvas: HTMLCanvasElement): void {
     eventHandlers.setupPanHandlers();
     eventHandlers.setupKeyboardHandlers();
 
-    // Render loop
+    // Render loop with conditional rendering
     const animate = () => {
         requestAnimationFrame(animate);
-        renderer.render(scene.getThreeScene(), camera.getThreeCamera());
+
+        // Only render if scene has changed or conditional rendering is disabled
+        if (!PERFORMANCE_CONFIG.enableConditionalRendering || needsRender) {
+            renderer!.render(renderScene!.getThreeScene(), renderCamera!.getThreeCamera());
+            needsRender = false; // Reset flag after rendering
+        }
     };
 
     animate();

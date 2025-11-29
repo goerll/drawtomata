@@ -27,7 +27,7 @@ export const TRANSITION_CONFIG = {
     // Curve appearance
     curveColor: 0x35362E,          // Cream color for transition curves
     curveWidth: 0.01,              // Match start state arrow thickness
-    curveSegments: 32,             // Number of segments for smooth curve
+    curveSegments: 20,             // Number of segments for smooth curve (optimized for performance)
 
     // Arrow head
     arrowHeadSize: 0.04,           // Match start state arrow head size

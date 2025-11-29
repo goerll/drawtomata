@@ -12,8 +12,9 @@ export const ConfigButton: React.FC = () => {
   return (
     <>
       <button
-        className={`absolute top-4 right-4 p-2 rounded-lg bg-[#10100E] hover:bg-[#30302B] transition-all cursor-pointer bg-opacity-60 backdrop-blur-xl border border-[#30302B] border-opacity-50 shadow-lg z-10 text-[#FFFFE3] ${isPanelOpen ?
-          "bg-[#FFFFE3] text-[#10100e]" : ""
+        className={`absolute top-4 right-4 p-2 rounded-lg transition-all cursor-pointer shadow-lg z-10 ${isPanelOpen
+          ? "bg-[#FFFFE3] text-[#1F1D19] border border-[#FFFFE3]"
+          : "bg-[#1F1D19] bg-opacity-60 backdrop-blur-xl border border-[#30302B] border-opacity-50 text-[#FFFFE3] hover:bg-[#30302B] hover:bg-opacity-100"
           }`}
         onClick={togglePanel}
       >

@@ -45,7 +45,7 @@ export const SimulationPanel: React.FC<SimulationPanelProps> = React.memo(({
                         className={`px-2 py-1 rounded ${index < status.currentPosition
                             ? 'bg-[#30302B] text-[#888888]' // Processed
                             : index === status.currentPosition
-                                ? 'bg-[#FFFFE3] border border-[#FFFFE3] text-[#10100E]' // Current
+                                ? 'bg-[#FFFFE3] border border-[#FFFFE3] text-[#1F1D19]' // Current
                                 : 'bg-transparent text-[#FFFFE3]' // Unprocessed
                             }`}
                     >
@@ -83,7 +83,7 @@ export const SimulationPanel: React.FC<SimulationPanelProps> = React.memo(({
                     <button
                         onClick={handleStart}
                         disabled={!inputValue.trim()}
-                        className="w-full px-4 py-2 bg-[#FFFFE3] border border-[#FFFFE3] rounded-lg text-[#10100E] hover:opacity-90 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="w-full px-4 py-2 bg-[#FFFFE3] border border-[#FFFFE3] rounded-lg text-[#1F1D19] hover:opacity-90 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                         Start
                     </button>
@@ -120,7 +120,7 @@ export const SimulationPanel: React.FC<SimulationPanelProps> = React.memo(({
                 <button
                     onClick={onTogglePlay}
                     disabled={status.isComplete}
-                    className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-[#FFFFE3] border border-[#FFFFE3] rounded-lg text-[#10100E] hover:opacity-90 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-[#FFFFE3] border border-[#FFFFE3] rounded-lg text-[#1F1D19] hover:opacity-90 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                     {status.isRunning ? (
                         <>

@@ -3,6 +3,7 @@ import { VisualTransition, TRANSITION_CONFIG } from '../../types/Transition';
 import { STATE_CONFIG } from '../../types/rendering';
 import { FontType } from '../../contexts/AppStateContext';
 import type { StateManager } from './StateManager';
+import { markSceneDirty } from '../engine/initThreeJS';
 
 /**
  * Manages the visual representation of automaton transitions
@@ -50,15 +51,11 @@ export class TransitionManager {
             ...visual,
         };
 
-        // Set renderOrder to ensure transitions render behind states (default is 0)
-        visual.curve.renderOrder = 0;
-        visual.arrowHead.renderOrder = 0;
-        visual.label.renderOrder = 0;
-
         this.transitions.set(id, transition);
         this.scene.add(visual.curve);
         this.scene.add(visual.arrowHead);
         this.scene.add(visual.label);
+        markSceneDirty();
 
         return transition;
     }
@@ -106,6 +103,7 @@ export class TransitionManager {
             this.scene.remove(transition.arrowHead);
             this.scene.remove(transition.label);
             this.transitions.delete(id);
+            markSceneDirty();
         }
     }
 
@@ -131,6 +129,7 @@ export class TransitionManager {
         newLabel.position.copy(transition.label.position);
         transition.label = newLabel;
         this.scene.add(newLabel);
+        markSceneDirty();
     }
 
     /**
@@ -227,6 +226,7 @@ export class TransitionManager {
                 }
             }
         });
+        markSceneDirty();
     }
 
     /**
@@ -518,6 +518,7 @@ export class TransitionManager {
         });
         this.transitions.clear();
         this.transitionCounter = 0;
+        markSceneDirty();
     }
 
     /**
@@ -541,5 +542,6 @@ export class TransitionManager {
             // Add new label to scene
             this.scene.add(newLabel);
         });
+        markSceneDirty();
     }
 }

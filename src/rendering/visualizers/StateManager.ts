@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { VisualState, STATE_CONFIG } from '../../types/rendering';
 import { FontType } from '../../contexts/AppStateContext';
+import { markSceneDirty } from '../engine/initThreeJS';
 
 /**
  * Manages the visual representation of automaton states
@@ -28,8 +29,6 @@ export class StateManager {
         const stateGroup = this.createStateVisual(id, isStart, isAccepting);
         stateGroup.position.set(position.x, position.y, 0);
 
-        // Set renderOrder to ensure states render on top of transitions
-        stateGroup.renderOrder = 1;
 
         const visualState: VisualState = {
             id,
@@ -43,6 +42,7 @@ export class StateManager {
 
         this.states.set(id, visualState);
         this.scene.add(stateGroup);
+        markSceneDirty();
 
         return visualState;
     }
@@ -52,17 +52,17 @@ export class StateManager {
         if (state) {
             // Properly dispose of Three.js resources to prevent memory leaks
             state.mesh.traverse((child) => {
-                if (child instanceof THREE.Sprite) {
-                    const sprite = child as THREE.Sprite;
-                    if (sprite.material.map) {
-                        sprite.material.map.dispose();
-                    }
-                    sprite.material.dispose();
-                } else if (child instanceof THREE.Mesh) {
+                if (child instanceof THREE.Mesh) {
                     const mesh = child as THREE.Mesh;
                     if (Array.isArray(mesh.material)) {
-                        mesh.material.forEach(mat => mat.dispose());
+                        mesh.material.forEach(mat => {
+                            const basicMat = mat as THREE.MeshBasicMaterial;
+                            if (basicMat.map) basicMat.map.dispose();
+                            mat.dispose();
+                        });
                     } else {
+                        const basicMat = mesh.material as THREE.MeshBasicMaterial;
+                        if (basicMat.map) basicMat.map.dispose();
                         mesh.material.dispose();
                     }
                     if (mesh.geometry) {
@@ -72,6 +72,7 @@ export class StateManager {
             });
             this.scene.remove(state.mesh);
             this.states.delete(id);
+            markSceneDirty();
         }
     }
 
@@ -166,6 +167,7 @@ export class StateManager {
 
         state.position.copy(newPosition);
         state.mesh.position.set(newPosition.x, newPosition.y, 0);
+        markSceneDirty();
     }
 
     /**
@@ -183,8 +185,11 @@ export class StateManager {
         // Recreate visual to reflect changes
         this.scene.remove(state.mesh);
         state.mesh = this.createStateVisual(id, state.isStart, state.isAccepting, state.isSelected, state.isFrontier);
+
+        // Restore Z position
         state.mesh.position.set(state.position.x, state.position.y, 0);
         this.scene.add(state.mesh);
+        markSceneDirty();
     }
 
     /**
@@ -211,6 +216,7 @@ export class StateManager {
         const circleGeometry = new THREE.CircleGeometry(STATE_CONFIG.radius, STATE_CONFIG.segments);
         const circleMaterial = new THREE.MeshBasicMaterial({ color: config.fillColor });
         const circle = new THREE.Mesh(circleGeometry, circleMaterial);
+        // Circle at state Z (no offset)
         group.add(circle);
 
         // Create circle outline
@@ -221,6 +227,7 @@ export class StateManager {
         );
         const outlineMaterial = new THREE.MeshBasicMaterial({ color: config.strokeColor });
         const outline = new THREE.Mesh(outlineGeometry, outlineMaterial);
+        // Circle at state Z (no offset)
         group.add(outline);
 
         // If accepting state, add inner circle
@@ -232,6 +239,7 @@ export class StateManager {
                 STATE_CONFIG.segments
             );
             const innerOutline = new THREE.Mesh(innerOutlineGeometry, outlineMaterial);
+            // Circle at state Z (no offset)
             group.add(innerOutline);
         }
 
@@ -323,7 +331,7 @@ export class StateManager {
 
         // Add text label for state ID
         const label = this.createTextLabel(id, config.strokeColor);
-        label.position.set(0, 0, 0.01); // Slightly in front to avoid z-fighting
+        label.position.set(0, 0, 0.005); // Slightly in front of circles, but behind overlapping states
         group.add(label);
 
         return group;
@@ -366,9 +374,9 @@ export class StateManager {
         });
     }
     /**
-     * Creates a text label sprite using canvas texture
+     * Creates a text label mesh using canvas texture
      */
-    private createTextLabel(text: string, color: number): THREE.Sprite {
+    private createTextLabel(text: string, color: number): THREE.Mesh {
         // Create canvas for text
         const canvas = document.createElement('canvas');
         const context = canvas.getContext('2d')!;
@@ -397,20 +405,21 @@ export class StateManager {
         const texture = new THREE.CanvasTexture(canvas);
         texture.needsUpdate = true;
 
-        // Create sprite material with the texture
-        const material = new THREE.SpriteMaterial({
+        // Create mesh material with the texture (not sprite material)
+        const material = new THREE.MeshBasicMaterial({
             map: texture,
             transparent: true,
+            side: THREE.DoubleSide, // Visible from both sides
+            depthTest: true,
+            depthWrite: false, // Don't write to depth buffer (transparent object)
         });
 
-        // Create sprite
-        const sprite = new THREE.Sprite(material);
-
-        // Scale sprite to appropriate size (adjust based on state radius)
+        // Create a plane geometry instead of sprite
         const scale = STATE_CONFIG.radius * 1.2;
-        sprite.scale.set(scale * 2, scale, 1);
+        const geometry = new THREE.PlaneGeometry(scale * 2, scale);
+        const mesh = new THREE.Mesh(geometry, material);
 
-        return sprite;
+        return mesh;
     }
 
     /**
@@ -422,5 +431,7 @@ export class StateManager {
         });
         this.states.clear();
         this.stateCounter = 0;
+        markSceneDirty();
     }
 }
+
