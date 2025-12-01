@@ -3,6 +3,7 @@ import type { Camera as CameraClass } from '../rendering/engine/Camera';
 
 interface CameraContextType {
     camera: CameraClass | null;
+    controls: any | null;
     currentZoom: number;
     zoomIn: () => void;
     zoomOut: () => void;
@@ -11,7 +12,7 @@ interface CameraContextType {
 
 const CameraContext = createContext<CameraContextType | undefined>(undefined);
 
-export const CameraProvider: React.FC<{ children: React.ReactNode; camera: CameraClass | null }> = ({ children, camera }) => {
+export const CameraProvider: React.FC<{ children: React.ReactNode; camera: CameraClass | null; controls: any | null }> = ({ children, camera, controls }) => {
     const [currentZoom, setCurrentZoom] = useState(1);
 
     // Subscribe to camera zoom changes
@@ -43,12 +44,12 @@ export const CameraProvider: React.FC<{ children: React.ReactNode; camera: Camer
 
     const resetCamera = () => {
         if (camera) {
-            camera.resetCamera();
+            camera.resetCamera(controls);
         }
     };
 
     return (
-        <CameraContext.Provider value={{ camera, currentZoom, zoomIn, zoomOut, resetCamera }}>
+        <CameraContext.Provider value={{ camera, controls, currentZoom, zoomIn, zoomOut, resetCamera }}>
             {children}
         </CameraContext.Provider>
     );

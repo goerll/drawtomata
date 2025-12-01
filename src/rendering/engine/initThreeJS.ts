@@ -1,5 +1,6 @@
 import * as THREE from 'three';
-import { RENDER_CONFIG, PERFORMANCE_CONFIG } from '../config/constants';
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
+import { RENDER_CONFIG, PERFORMANCE_CONFIG, ZOOM_CONFIG } from '../config/constants';
 import { Scene } from './Scene';
 import { Camera } from './Camera';
 import { EventHandlers } from './EventHandlers';
@@ -8,6 +9,7 @@ import { EventHandlers } from './EventHandlers';
 let globalCamera: Camera | null = null;
 let globalScene: Scene | null = null;
 let globalEventHandlers: EventHandlers | null = null;
+let globalControls: OrbitControls | null = null;
 
 // Dirty flag for conditional rendering
 let needsRender = true;
@@ -25,6 +27,10 @@ export function getScene(): Scene | null {
 
 export function getEventHandlers(): EventHandlers | null {
     return globalEventHandlers;
+}
+
+export function getControls(): OrbitControls | null {
+    return globalControls;
 }
 
 /**
@@ -59,18 +65,50 @@ export function initThreeApp(canvas: HTMLCanvasElement): void {
     const camera = new Camera();
     renderCamera = camera;
 
+    // OrbitControls setup for 2D panning and touchpad support
+    const controls = new OrbitControls(camera.getThreeCamera(), canvas);
+
+    // Configure for 2D panning (orthographic camera)
+    controls.enableRotate = false;  // Disable rotation (2D app)
+    controls.enablePan = true;       // Enable panning
+    controls.enableZoom = true;      // Enable zoom
+    controls.enableDamping = true;   // Smooth controls
+    controls.dampingFactor = 0.20;   // Damping strength
+
+    // Mouse button configuration
+    // Left-click = select/interact (handled by EventHandlers)
+    // Middle-click and right-click = pan
+    controls.mouseButtons = {
+        LEFT: THREE.MOUSE.ROTATE,   // Disabled by enableRotate = false
+        MIDDLE: THREE.MOUSE.PAN,    // Middle-click pans
+        RIGHT: THREE.MOUSE.PAN      // Right-click also pans
+    };
+
+    // Pan speed adjustment
+    controls.panSpeed = 1.0;
+
+    // Zoom configuration to match Camera class limits
+    controls.minZoom = ZOOM_CONFIG.min;
+    controls.maxZoom = ZOOM_CONFIG.max;
+
+    // Mark scene dirty when controls change (for touchpad/mouse interactions)
+    controls.addEventListener('change', () => {
+        markSceneDirty();
+    });
+
     // Event handlers setup
     const eventHandlers = new EventHandlers(camera, canvas);
     eventHandlers.setupClickHandler();
     eventHandlers.setupMouseHandlers();
-    eventHandlers.setupWheelHandler();
     eventHandlers.setupResizeHandler(renderer);
-    eventHandlers.setupPanHandlers();
     eventHandlers.setupKeyboardHandlers();
 
     // Render loop with conditional rendering
     const animate = () => {
         requestAnimationFrame(animate);
+
+        // Update controls (required for damping)
+        controls.update();
 
         // Only render if scene has changed or conditional rendering is disabled
         if (!PERFORMANCE_CONFIG.enableConditionalRendering || needsRender) {
@@ -84,4 +122,5 @@ export function initThreeApp(canvas: HTMLCanvasElement): void {
     globalCamera = camera;
     globalScene = scene;
     globalEventHandlers = eventHandlers;
+    globalControls = controls;
 }

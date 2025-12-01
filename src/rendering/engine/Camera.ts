@@ -65,13 +65,6 @@ export class Camera {
         this.applyZoom(this.currentZoom / ZOOM_CONFIG.factor);
     }
 
-    public pan(deltaX: number, deltaY: number): void {
-        this.camera.position.x += deltaX;
-        this.camera.position.y += deltaY;
-        // No need to call updateProjectionMatrix for position changes
-        markSceneDirty();
-    }
-
     public getPosition(): THREE.Vector3 {
         return this.camera.position.clone(); // Return a clone to prevent direct modification
     }
@@ -82,9 +75,14 @@ export class Camera {
         markSceneDirty();
     }
 
-    public resetCamera() {
+    public resetCamera(controls?: any) {
         this.applyZoom(ZOOM_CONFIG.initial);
         this.setPosition(0, 0);
+        // Reset OrbitControls target if provided
+        if (controls) {
+            controls.target.set(0, 0, 0);
+            controls.update();
+        }
     }
 
     public onZoomChanged(callback: (zoom: number) => void): () => void {

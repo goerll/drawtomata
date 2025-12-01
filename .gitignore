@@ -1,7 +1,7 @@
 # Node dependencies
 node_modules/
 
-# Build outputs (adjust if you use a different tool)
+# Build outputs
 dist/
 build/
 
@@ -13,10 +13,19 @@ pnpm-debug.log*
 logs/
 *.log
 
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# Testing
+coverage/
+
 # Editor/OS cruft
 .DS_Store
 Thumbs.db
-
-# IDE settings
+.idea/
 .vscode/
 *.swp
+*.swo
+

@@ -1,12 +1,14 @@
 import "../index.css";
 import React from "react";
 import { createRoot } from "react-dom/client";
-import { initThreeApp, getCamera, getScene, getEventHandlers, markSceneDirty } from "../rendering/engine/initThreeJS";
+import { initThreeApp, getCamera, getScene, getEventHandlers, getControls, markSceneDirty } from "../rendering/engine/initThreeJS";
 import { StateManager } from "../rendering/visualizers/StateManager";
 import { TransitionManager } from "../rendering/visualizers/TransitionManager";
 import { SelectionBox } from "../rendering/visualizers/SelectionBox";
 import { InteractionManager } from "../rendering/engine/InteractionManager";
 import { ConfigButton } from "../components/ConfigButton";
+import { GitHubButton } from "../components/GitHubButton";
+import { HelpButton } from "../components/HelpButton";
 import { Toolbar } from "../components/Toolbar";
 import { ZoomControl } from "../components/ZoomControl";
 import { TransitionModal } from "../components/TransitionModal";
@@ -20,6 +22,7 @@ import { AppStateProvider, useAppState } from "../contexts/AppStateContext";
 function AppContent() {
     const canvasRef = React.useRef<HTMLCanvasElement | null>(null);
     const [camera, setCamera] = React.useState<any>(null);
+    const [controls, setControls] = React.useState<any>(null);
     const { state } = useAppState();
     const stateManagerRef = React.useRef<StateManager | null>(null);
     const transitionManagerRef = React.useRef<TransitionManager | null>(null);
@@ -223,8 +226,10 @@ function AppContent() {
         const cam = getCamera();
         const scene = getScene();
         const eventHandlers = getEventHandlers();
+        const orbitControls = getControls();
 
         setCamera(cam);
+        setControls(orbitControls);
 
         if (scene && eventHandlers) {
             // Wait for fonts to load before initializing StateManager
@@ -415,7 +420,7 @@ function AppContent() {
     }, [updateDefinition]);
 
     return (
-        <CameraProvider camera={camera}>
+        <CameraProvider camera={camera} controls={controls}>
             <div className="relative w-screen h-screen overflow-hidden">
                 <canvas
                     ref={canvasRef}
@@ -430,6 +435,12 @@ function AppContent() {
 
                 {/* UI overlay: config button top-right */}
                 <ConfigButton />
+
+                {/* UI overlay: help button bottom-right (left of github) */}
+                <HelpButton />
+
+                {/* UI overlay: github button bottom-right */}
+                <GitHubButton />
 
                 {/* Automaton Definition Sidebar */}
                 <AutomatonDefinitionSidebar

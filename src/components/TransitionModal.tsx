@@ -123,9 +123,9 @@ export const TransitionModal: React.FC<TransitionModalProps> = ({
                                 }}
                                 onKeyDown={handleKeyDown}
                                 placeholder="e.g., a,b,0 or epsilon"
-                                className="w-full px-3 py-2 bg-[#1E1F18] border border-[#30302B] rounded text-[#FFFFE3] placeholder-[#30302B] focus:outline-none focus:border-[#FFFFE3]"
+                                className="w-full px-3 py-2 bg-[#1E1F18] border border-[#30302B] rounded text-[#FFFFE3] placeholder-[#FFFFE3] placeholder-opacity-70 focus:outline-none focus:border-[#FFFFE3]"
                             />
-                            <p className="mt-1 text-xs text-[#30302B]">
+                            <p className="mt-1 text-xs text-[#FFFFE3] opacity-70">
                                 Comma-separated. Use "epsilon" or "empty" for ε
                             </p>
                             {error && (

@@ -8,8 +8,6 @@ export type KeyboardCallback = (event: KeyboardEvent) => void;
 
 export class EventHandlers {
     private camera: Camera;
-    private isPanning: boolean;
-    private lastMousePosition: THREE.Vector2;
     private clickCallbacks: ClickCallback[];
     private mouseDownCallbacks: MouseCallback[];
     private mouseMoveCallbacks: MouseCallback[];
@@ -19,8 +17,6 @@ export class EventHandlers {
 
     constructor(camera: Camera, canvas?: HTMLCanvasElement) {
         this.camera = camera;
-        this.isPanning = false;
-        this.lastMousePosition = new THREE.Vector2();
         this.clickCallbacks = [];
         this.mouseDownCallbacks = [];
         this.mouseMoveCallbacks = [];
@@ -97,7 +93,15 @@ export class EventHandlers {
 
         // Get camera properties
         const threeCamera = this.camera.getThreeCamera();
-        const zoom = this.camera.getCurrentZoom();
+
+        // IMPORTANT: Update camera matrices before reading position/zoom
+        // OrbitControls modifies the camera directly, so we need to ensure
+        // the world matrix is up-to-date for accurate coordinate transformation
+        threeCamera.updateMatrixWorld();
+
+        // Read zoom directly from the THREE.js camera object, not our cached value
+        // OrbitControls may have modified camera.zoom directly
+        const zoom = threeCamera.zoom;
         const position = this.camera.getPosition();
 
         // Calculate world coordinates for orthographic camera
@@ -114,8 +118,8 @@ export class EventHandlers {
         if (!this.canvas) return;
 
         this.canvas.addEventListener('click', (event: MouseEvent) => {
-            // Don't trigger on right click or during pan
-            if (event.button !== 0 || this.isPanning) return;
+            // Don't trigger on right click
+            if (event.button !== 0) return;
 
             // Only process clicks directly on the canvas (not on UI overlays)
             if (event.target !== this.canvas) return;
@@ -151,22 +155,6 @@ export class EventHandlers {
         });
     }
 
-    public setupWheelHandler(): void {
-        window.addEventListener(
-            'wheel',
-            (event: WheelEvent) => {
-                event.preventDefault();
-
-                if (event.deltaY < 0) {
-                    this.camera.zoomIn();
-                } else if (event.deltaY > 0) {
-                    this.camera.zoomOut();
-                }
-            },
-            { passive: false }
-        );
-    }
-
     public setupResizeHandler(renderer: THREE.WebGLRenderer): void {
         const handleResize = () => {
             const width = window.innerWidth;
@@ -183,57 +171,6 @@ export class EventHandlers {
         };
 
         window.addEventListener('resize', handleResize);
-    }
-
-    public setupPanHandlers(): void {
-        window.addEventListener('contextmenu', (event: MouseEvent) => {
-            event.preventDefault();
-        });
-
-        window.addEventListener('mousedown', (event: MouseEvent) => {
-            if (event.button === 2) { // Right mouse button
-                this.isPanning = true;
-                this.lastMousePosition.set(event.clientX, event.clientY);
-            }
-        });
-
-        window.addEventListener('mousemove', (event: MouseEvent) => {
-            if (this.isPanning) {
-                // Calculate screen space delta in pixels
-                const screenDeltaX = event.clientX - this.lastMousePosition.x;
-                const screenDeltaY = event.clientY - this.lastMousePosition.y;
-
-                // Convert screen delta to world space
-                // For orthographic camera, we need to account for:
-                // 1. The camera's view size (how much of world space is visible)
-                // 2. The current zoom level (camera.zoom)
-                // 3. The screen dimensions
-                const threeCamera = this.camera.getThreeCamera();
-                const zoom = this.camera.getCurrentZoom();
-
-                // Calculate world space per pixel
-                // Orthographic view width = (right - left) / zoom
-                const worldWidth = (threeCamera.right - threeCamera.left) / zoom;
-                const worldHeight = (threeCamera.top - threeCamera.bottom) / zoom;
-
-                const worldDeltaX = (screenDeltaX / window.innerWidth) * worldWidth;
-                const worldDeltaY = (screenDeltaY / window.innerHeight) * worldHeight;
-
-                // Pan camera (negative X because moving right should pan left, positive Y because screen Y is inverted)
-                this.camera.pan(-worldDeltaX, worldDeltaY);
-                this.lastMousePosition.set(event.clientX, event.clientY);
-            }
-        });
-
-        window.addEventListener('mouseup', (event: MouseEvent) => {
-            if (event.button === 2) { // Right mouse button
-                this.isPanning = false;
-            }
-        });
-
-        window.addEventListener('mouseleave', () => {
-            this.isPanning = false;
-        });
     }
 
     /**
