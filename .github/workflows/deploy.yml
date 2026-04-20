@@ -29,7 +29,6 @@ jobs:
         with:
           host: 91.98.232.237
           port: 22
-          port: 22
           username: projects
           key: ${{ secrets.DEPLOY_KEY }}
           script: |
