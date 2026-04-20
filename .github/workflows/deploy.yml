@@ -19,7 +19,7 @@ jobs:
           script: |
             if [ ! -d /var/www/drawtomata/.git ]; then
               rm -rf /var/www/drawtomata
-              git clone git@github.com:goerll/drawtomata.git /var/www/drawtomata
+              git clone https://github.com/goerll/drawtomata.git /var/www/drawtomata
             fi
             cd /var/www/drawtomata
             git pull origin main
