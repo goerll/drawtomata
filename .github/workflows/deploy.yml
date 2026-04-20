@@ -1,0 +1,34 @@
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build
+        run: pnpm build
+
+      - name: Deploy
+        uses: appleboy/ssh-action@v1
+        with:
+          host: 100.83.226.43
+          username: projects
+          key: ${{ secrets.DEPLOY_KEY }}
+          script: |
+            mkdir -p /var/www/drawtomata
+            rm -rf /var/www/drawtomata/dist
+            cp -r $GITHUB_WORKSPACE/dist /var/www/drawtomata/
