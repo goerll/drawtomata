@@ -10,28 +10,18 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22
-
-      - name: Install pnpm
-        run: npm install -g pnpm
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-
-      - name: Build
-        run: pnpm build
-
       - name: Deploy
         uses: appleboy/ssh-action@v1
         with:
           host: 91.98.232.237
-          port: 22
           username: projects
           key: ${{ secrets.DEPLOY_KEY }}
           script: |
-            mkdir -p /var/www/drawtomata
-            rm -rf /var/www/drawtomata/dist
-            cp -r $GITHUB_WORKSPACE/dist /var/www/drawtomata/dist
+            if [ ! -d /var/www/drawtomata ]; then
+              git clone git@github.com:goerll/drawtomata.git /var/www/drawtomata
+            fi
+            cd /var/www/drawtomata
+            git pull origin main
+            pnpm install --frozen-lockfile
+            pnpm build
+            rm -rf dist && mv build dist
