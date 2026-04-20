@@ -34,4 +34,4 @@ jobs:
           script: |
             mkdir -p /var/www/drawtomata
             rm -rf /var/www/drawtomata/dist
-            cp -r $GITHUB_WORKSPACE/dist /var/www/drawtomata/
+            cp -r $GITHUB_WORKSPACE/dist /var/www/drawtomata/dist
